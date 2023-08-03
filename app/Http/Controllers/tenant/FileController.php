@@ -68,7 +68,7 @@ class FileController extends Controller
   public function upload(Request $request){
 
     $request->validate([
-			'file' => ['required', 'image', 'mimes:jpeg,png,jpg,svg'],
+			'file' => ['required'], // 'mimetypes:jpeg,jpg,png,svg,mp4,mov,avi,pdf'
 		]);
 
     try {
@@ -81,7 +81,8 @@ class FileController extends Controller
         
       }
 
-      $storagePath = $request->file('file')->store();
+      //$storagePath = $request->file('file')->store();
+      $storagePath = Storage::disk('local')->putFile(null, $request->file('file'));
       [$width, $height] = getimagesize($request->file('file'));
       $filename = pathinfo($storagePath, PATHINFO_FILENAME);
       $extension = pathinfo($storagePath, PATHINFO_EXTENSION);
@@ -139,7 +140,8 @@ class FileController extends Controller
       }
 
       return response([
-        'message' => 'Server error.'
+        'message' => 'Server error.',
+        'error' => $e
       ], 500);
     }
   }

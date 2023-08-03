@@ -19,8 +19,8 @@ return new class extends Migration
             $table->string('mime_type');
             $table->string('path');
             $table->string('collection')->nullable();
-            $table->unsignedBigInteger('width');
-            $table->unsignedBigInteger('height');
+            $table->unsignedBigInteger('width')->nullable();
+            $table->unsignedBigInteger('height')->nullable();
             $table->unsignedBigInteger('size');
             $table->string('alternative_text')->nullable();
             $table->string('caption')->nullable();
