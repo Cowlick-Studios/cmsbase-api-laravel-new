@@ -16,10 +16,36 @@ php artisan key:generate --show
 ./vendor/bin/sail up -d
 
 # First startup
-./vendor/bin/sail artisan migrate:fresh --seed
+./vendor/bin/sail artisan migrate --seed
 
 # Stop sail (add -v flag to remove all volumes)
 ./vendor/bin/sail down
+```
+
+## Managing Tenants
+
+Below are the commands created to manage working with tenants, we also have a setup script which will manage migrating and seeding for the entire system including tenants in the next section.
+
+``` sh
+# Create tenant (automatically migrate)
+./vendor/bin/sail artisan tenant:create tenant admin@tenant.com password
+
+# Seed tenants (NOTE: you must migrate and seed tenants separately, do not use combination command)
+./vendor/bin/sail artisan tenants:seed
+
+# Delete tenant (removes tenant records and schema)
+./vendor/bin/sail artisan tenant:delete tenant
+
+# List tenant
+./vendor/bin/sail artisan tenant:list
+```
+
+## Easy setup
+
+This single command will scaffold the system by migrating, creating tenants as well as seeding the main system and all tenants.
+
+``` sh
+./vendor/bin/sail artisan app:dev_setup
 ```
 
 ## Connections
