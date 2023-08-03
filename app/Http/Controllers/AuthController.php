@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Hash;
 use Firebase\JWT\JWT;
@@ -52,6 +53,9 @@ class AuthController extends Controller
       ];
 
       $jwt = JWT::encode($payload, $jwtPrivateKey, 'EdDSA'); // key is required in SODIUM_BASE64_VARIANT_ORIGINAL
+
+      $user->remember_token = Str::random(10);
+      $user->save();
 
       return response([
         'message' => 'You have logged in successfully.',

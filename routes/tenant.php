@@ -12,6 +12,7 @@ use Stancl\Tenancy\Middleware\InitializeTenancyByPath;
 use App\Http\Middleware\AuthenticateToken;
 
 // Controllers
+use App\Http\Controllers\AuthController;
 use App\Http\Controllers\tenant\FileController;
 
 /*
@@ -35,6 +36,10 @@ Route::middleware([
   Route::middleware([AuthenticateToken::class])->post('/test', function(Request $request){
     $currentTenant = tenant();
     return "This is a test! {$currentTenant->id}";
+  });
+
+  Route::prefix('auth')->group(function () {
+    Route::post('/login', [AuthController::class, 'login']);
   });
 
   Route::prefix('file')->group(function () {
