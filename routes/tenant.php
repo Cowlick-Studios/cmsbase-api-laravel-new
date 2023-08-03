@@ -8,6 +8,9 @@ use Stancl\Tenancy\Middleware\PreventAccessFromCentralDomains;
 use Stancl\Tenancy\Middleware\InitializeTenancyBySubdomain;
 use Stancl\Tenancy\Middleware\InitializeTenancyByPath;
 
+// Middleware
+use App\Http\Middleware\AuthenticateToken;
+
 // Controllers
 use App\Http\Controllers\tenant\FileController;
 
@@ -28,6 +31,11 @@ Route::middleware([
   PreventAccessFromCentralDomains::class,
   'api'
 ])->group(function () {
+
+  Route::middleware([AuthenticateToken::class])->post('/test', function(Request $request){
+    $currentTenant = tenant();
+    return "This is a test! {$currentTenant->id}";
+  });
 
   Route::prefix('file')->group(function () {
     Route::get('/', [FileController::class, 'index']);

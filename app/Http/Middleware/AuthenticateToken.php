@@ -41,6 +41,21 @@ class AuthenticateToken
           ], 401);
         }
 
+        $currentTenant = tenant();
+        if($currentTenant){
+          if($currentTenant->id !== $decodedArray['tenant']){
+            return response([
+              'message' => 'This token is not valid for this tenant.'
+            ], 401);
+          }
+        }
+
+        if($decodedArray['tenant'] !== null){
+          return response([
+            'message' => 'This token is not valid for this tenant.'
+          ], 401);
+        }
+
         $user = User::where('id', $decodedArray['aud'])->first();
 
         if(!$user){

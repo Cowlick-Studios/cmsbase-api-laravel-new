@@ -3,8 +3,10 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
+// Middleware
 use App\Http\Middleware\AuthenticateToken;
 
+// Controllers
 use App\Http\Controllers\AuthController;
 
 /*
