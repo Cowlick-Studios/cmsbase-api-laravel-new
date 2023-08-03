@@ -3,6 +3,10 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
+use App\Http\Middleware\AuthenticateToken;
+
+use App\Http\Controllers\AuthController;
+
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -14,6 +18,10 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
+Route::middleware(AuthenticateToken::class)->post('/test', function(Request $request){
+  return "This is a test! {$request->email}";
+});
+
+Route::prefix('auth')->group(function () {
+  Route::post('/login', [AuthController::class, 'login']);
 });

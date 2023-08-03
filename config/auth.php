@@ -112,4 +112,15 @@ return [
 
     'password_timeout' => 10800,
 
+    /*
+    |--------------------------------------------------------------------------
+    | JWT Signature Key pair
+    |--------------------------------------------------------------------------
+    |
+    | Define the key pair used to sign and verify JWT auth tokens
+    |
+    */
+
+    'jwt_key' => env('APP_JWT', false),
+
 ];
