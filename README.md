@@ -16,7 +16,7 @@ php artisan key:generate --show
 ./vendor/bin/sail up -d
 
 # First startup
-./vendor/bin/sail artisan migrate --seed
+./vendor/bin/sail artisan migrate:fresh --seed
 
 # Stop sail (add -v flag to remove all volumes)
 ./vendor/bin/sail down

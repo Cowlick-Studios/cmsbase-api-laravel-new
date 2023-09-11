@@ -27,6 +27,7 @@ class UserController extends Controller
     try {
 
       $query = User::query();
+      $query->orderBy('created_at', 'desc');
       $users = $query->get();
 
       return response([
@@ -101,13 +102,13 @@ class UserController extends Controller
     try {
 
       if($request->has('name')){
-        $tenant->name = $request->name;
+        $user->name = $request->name;
       }
 
       $user->save();
 
       return response([
-        'message' => 'User tenant.',
+        'message' => 'User updated.',
         'user' => $user
       ], 200);
     } catch (Exception $e) {

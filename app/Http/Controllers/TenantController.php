@@ -31,6 +31,8 @@ class TenantController extends Controller
     try {
 
       $query = Tenant::query();
+      $query->orderBy('created_at', 'desc');
+
       $tenants = $query->get();
 
       return response([
