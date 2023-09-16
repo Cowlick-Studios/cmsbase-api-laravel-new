@@ -5,9 +5,11 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Database\QueryException;
+use Illuminate\Support\Facades\Storage;
 
 use App\Models\User;
 use App\Models\Tenant;
+use App\Models\tenant\CollectionFieldType;
 
 class TenantController extends Controller
 {
@@ -87,6 +89,10 @@ class TenantController extends Controller
         $tenant->domains()->create(['domain' => "{$tenantName}.{$centralDomain}"]);
       }
 
+      // Create tenant folder
+      mkdir(storage_path("tenant-{$tenant->id}"));
+
+      // Create tenant admin user
       $tenant->run(function (Tenant $tenant) use ($tenantName, $adminEmail, $adminPassword) {
         $user = User::create([
           'name' => 'Admin',
@@ -98,6 +104,58 @@ class TenantController extends Controller
         $user->remember_token = Str::random(10);
 
         $user->save();
+      });
+
+      // Seed tenant data
+      $tenant->run(function (Tenant $tenant) {
+
+        $types = [
+          // integer
+          "tinyInteger",
+          "unsignedTinyInteger",
+          "smallInteger",
+          "unsignedSmallInteger",
+          "integer",
+          "unsignedInteger",
+          "mediumInteger",
+          "unsignedMediumInteger",
+          "bigInteger",
+          "unsignedBigInteger",
+
+          // float
+          "decimal",
+          "unsignedDecimal",
+          "float",
+          "double",
+
+          // text
+          "char",
+          "string",
+          "tinyText",
+          "text",
+          "mediumText",
+          "longText",
+
+          //other
+          "boolean",
+          "date",
+          "time",
+          "dateTime",
+          "timestamp",
+        ];
+
+        foreach($types as $index => $type){
+          $collectionFieldType = CollectionFieldType::create([
+            'name' => $type,
+            'datatype' => $type
+          ]);
+        }
+
+        $collectionFieldTypeRichText = CollectionFieldType::create([
+          'name' => "richText",
+          'datatype' => "longText"
+        ]);
+        
       });
 
       return response([
@@ -113,7 +171,8 @@ class TenantController extends Controller
       }
 
       return response([
-        'message' => 'Server error.'
+        'message' => 'Server error.',
+        'error' => $e
       ], 500);
     }
   }

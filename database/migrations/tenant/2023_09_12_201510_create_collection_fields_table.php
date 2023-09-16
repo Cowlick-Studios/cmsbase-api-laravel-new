@@ -11,14 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('users', function (Blueprint $table) {
+        Schema::create('collection_fields', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('collection_id')->references('id')->on('collections')->onDelete('cascade');
+            $table->foreignId('type_id')->references('id')->on('collection_field_types')->onDelete('cascade');
             $table->string('name');
-            $table->string('email')->unique();
-            $table->timestamp('email_verified_at')->nullable();
-            $table->string('password');
-            $table->boolean('public')->default(true);
-            $table->rememberToken();
             $table->timestamps();
         });
     }
@@ -28,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('users');
+        Schema::dropIfExists('collection_fields');
     }
 };

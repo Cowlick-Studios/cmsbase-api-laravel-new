@@ -13,7 +13,10 @@ use App\Http\Middleware\AuthenticateToken;
 
 // Controllers
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\tenant\DashboardController;
+use App\Http\Controllers\tenant\UserController;
 use App\Http\Controllers\tenant\FileController;
+use App\Http\Controllers\tenant\CollectionController;
 
 /*
 |--------------------------------------------------------------------------
@@ -42,6 +45,21 @@ Route::middleware([
     Route::post('/login', [AuthController::class, 'login']);
   });
 
+  Route::prefix('dashboard')->group(function () {
+    Route::get('/', [DashboardController::class, 'index']);
+  });
+
+  Route::prefix('user')->group(function () {
+    Route::get('/', [UserController::class, 'index']);
+    Route::get('/{user}', [UserController::class, 'show']);
+    Route::post('/', [UserController::class, 'create']);
+    Route::put('/{user}', [UserController::class, 'update']);
+    Route::patch('/{user}', [UserController::class, 'update']);
+    Route::delete('/{user}', [UserController::class, 'destroy']);
+  
+    Route::post('/{user}/verify', [UserController::class, 'verifyEmail']);
+  });
+
   Route::prefix('file')->group(function () {
     Route::get('/', [FileController::class, 'index']);
     Route::post('/', [FileController::class, 'upload']);
@@ -52,6 +70,20 @@ Route::middleware([
     // Route::get('/{collection}/{fileName}', [FileController::class, 'retrieveFileByCollection']);
     Route::delete('/{fileName}', [FileController::class, 'destroyFile']);
     // Route::delete('/{collection}/{fileName}', [FileController::class, 'destroyFileByCollection']);
+  });
+
+  Route::prefix('collection')->group(function () {
+    Route::get('/', [CollectionController::class, 'index']);
+    Route::get('/{collection}', [CollectionController::class, 'show']);
+    Route::post('/', [CollectionController::class, 'store']);
+    Route::delete('/{collection}', [CollectionController::class, 'destroy']);
+    Route::post('/{collection}/field', [CollectionController::class, 'addField']);
+    Route::delete('/{collection}/field/{fieldName}', [CollectionController::class, 'removeField']);
+  });
+
+  Route::prefix('collection_field_type')->group(function () {
+    Route::get('/', [CollectionController::class, 'getFieldTypes']);
+    Route::post('/', [CollectionController::class, 'createFieldType']);
   });
 
 });

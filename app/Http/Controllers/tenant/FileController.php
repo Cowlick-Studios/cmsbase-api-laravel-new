@@ -78,7 +78,6 @@ class FileController extends Controller
         return response([
           'message' => 'No file selected for upload.',
         ], 500);
-        
       }
 
       //$storagePath = $request->file('file')->store();
