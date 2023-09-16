@@ -17,6 +17,7 @@ use App\Http\Controllers\tenant\DashboardController;
 use App\Http\Controllers\tenant\UserController;
 use App\Http\Controllers\tenant\FileController;
 use App\Http\Controllers\tenant\CollectionController;
+use App\Http\Controllers\tenant\DocumentController;
 
 /*
 |--------------------------------------------------------------------------
@@ -79,6 +80,13 @@ Route::middleware([
     Route::delete('/{collection}', [CollectionController::class, 'destroy']);
     Route::post('/{collection}/field', [CollectionController::class, 'addField']);
     Route::delete('/{collection}/field/{fieldName}', [CollectionController::class, 'removeField']);
+
+    // Documents
+    Route::get('/{collection}/document', [DocumentController::class, 'index']);
+    Route::get('/{collection}/document/{document}', [DocumentController::class, 'show']);
+    Route::post('/{collection}/document', [DocumentController::class, 'store']);
+    Route::patch('/{collection}/document/{document}', [DocumentController::class, 'update']);
+    Route::delete('/{collection}/document/{document}', [DocumentController::class, 'destroy']);
   });
 
   Route::prefix('collection_field_type')->group(function () {
