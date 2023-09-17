@@ -21,8 +21,10 @@ use App\Models\tenant\User;
 class DocumentController extends Controller
 {
 
-  public function index (Request $request, Collection $collection){
+  public function index (Request $request, $collectionName){
     try {
+
+      $collection = Collection::with(['fields', 'fields.type'])->where('name', $collectionName)->first();
 
       if(!$collection->public_read && (!$request->requesting_user || $request->requesting_user->public)){
         return response([
@@ -45,8 +47,10 @@ class DocumentController extends Controller
     }
   }
 
-  public function show (Request $request, Collection $collection){
+  public function show (Request $request, $collectionName, $documentId){
     try {
+
+      $collection = Collection::with(['fields', 'fields.type'])->where('name', $collectionName)->first();
 
       if(!$collection->public_read && (!$request->requesting_user || $request->requesting_user->public)){
         return response([
@@ -54,11 +58,13 @@ class DocumentController extends Controller
         ], 401);
       }
 
-      $collection->load(['fields', 'fields.type']);
+      $tableName = "collection-{$collection->name}";
+      $query = DB::table($tableName)->where('id', $documentId);
+      $document = $query->orderBy('updated_at', 'desc')->first();
 
       return response([
-        'message' => 'Collections.',
-        'collection' => $collection
+        'message' => 'Collection document.',
+        'document' => $document
       ], 200);
     } catch (Exception $e) {
       return response([
@@ -67,8 +73,10 @@ class DocumentController extends Controller
     }
   }
 
-  public function store (Request $request, Collection $collection){
+  public function store (Request $request, $collectionName){
     try {
+
+      $collection = Collection::with(['fields', 'fields.type'])->where('name', $collectionName)->first();
 
       $record = $request->all();
 
@@ -94,8 +102,10 @@ class DocumentController extends Controller
     }
   }
 
-  public function update (Request $request, Collection $collection, $documentId){
+  public function update (Request $request, $collectionName, $documentId){
     try {
+
+      $collection = Collection::with(['fields', 'fields.type'])->where('name', $collectionName)->first();
 
       $updatedDocument = $request->all();
       unset($updatedDocument['requesting_user']);
@@ -115,8 +125,10 @@ class DocumentController extends Controller
     }
   }
 
-  public function destroy (Request $request, Collection $collection, $documentId){
+  public function destroy (Request $request, $collectionName, $documentId){
     try {
+
+      $collection = Collection::with(['fields', 'fields.type'])->where('name', $collectionName)->first();
 
       $tableName = "collection-{$collection->name}";
       $deleted = DB::table($tableName)->where('id', $documentId)->delete();

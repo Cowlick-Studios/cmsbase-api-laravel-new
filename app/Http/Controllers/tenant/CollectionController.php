@@ -44,10 +44,10 @@ class CollectionController extends Controller
     }
   }
 
-  public function show (Request $request, Collection $collection){
+  public function show (Request $request, $collectionName){
     try {
 
-      $collection->load(['fields', 'fields.type']);
+      $collection = Collection::with(['fields', 'fields.type'])->where('name', $collectionName)->first();
 
       if(!$collection->public_read && (!$request->requesting_user || $request->requesting_user->public)){
         return response([
@@ -104,15 +104,17 @@ class CollectionController extends Controller
     }
   }
 
-  public function addField (Request $request, Collection $collection){
+  public function addField (Request $request, $collectionName){
     $request->validate([
 			'name' => ['required'],
-      'type_id' => ['required'],
+      'type' => ['required'],
 		]);
 
     try {
 
-      $collectionFieldType = CollectionFieldType::where('id', $request->type_id)->first();
+      $collection = Collection::with(['fields', 'fields.type'])->where('name', $collectionName)->first();
+
+      $collectionFieldType = CollectionFieldType::where('name', $request->type)->first();
 
       $newCollectionField = CollectionField::create([
         'name' => $request->name,
@@ -214,9 +216,10 @@ class CollectionController extends Controller
     }
   }
 
-  public function removeField (Request $request, Collection $collection, $fieldName){
+  public function removeField (Request $request, $collectionName, $fieldName){
     try {
 
+      $collection = Collection::with(['fields', 'fields.type'])->where('name', $collectionName)->first();
       $collectionFieldTypeRemoved = CollectionField::where('collection_id', $collection->id)->where('name', $fieldName)->delete();
 
       $tableName = "collection-{$collection->name}";
@@ -225,8 +228,7 @@ class CollectionController extends Controller
       });
 
       return response([
-        'message' => 'Collection field removed.',
-        '$collectionFieldTypeRemoved' => $collectionFieldTypeRemoved
+        'message' => 'Collection field removed.'
       ], 200);
     } catch (Exception $e) {
       return response([

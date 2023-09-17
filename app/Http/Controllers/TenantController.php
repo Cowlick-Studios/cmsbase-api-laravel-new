@@ -98,6 +98,8 @@ class TenantController extends Controller
           'name' => 'Admin',
           'email' => $adminEmail,
           'password' => bcrypt($adminPassword),
+          'public' => false,
+          'blocked' => false
         ]);
 
         $user->email_verified_at = now();
