@@ -10,6 +10,9 @@ use Stancl\Tenancy\Middleware\InitializeTenancyByPath;
 
 // Middleware
 use App\Http\Middleware\AuthenticateToken;
+use App\Http\Middleware\AuthenticateTokenTenant;
+use App\Http\Middleware\AdminUserOnlyTenant;
+use App\Http\Middleware\PublicUserOnlyTenant;
 
 // Controllers
 use App\Http\Controllers\AuthController;
@@ -37,7 +40,7 @@ Route::middleware([
   'api'
 ])->group(function () {
 
-  Route::middleware([AuthenticateToken::class])->post('/test', function(Request $request){
+  Route::middleware([AuthenticateTokenTenant::class])->post('/test', function(Request $request){
     $currentTenant = tenant();
     return "This is a test! {$currentTenant->id}";
   });
@@ -61,7 +64,7 @@ Route::middleware([
     Route::post('/{user}/verify', [UserController::class, 'verifyEmail']);
   });
 
-  Route::prefix('file')->group(function () {
+  Route::prefix('file')->middleware([AuthenticateTokenTenant::class])->group(function () {
     Route::get('/', [FileController::class, 'index']);
     Route::post('/', [FileController::class, 'upload']);
     Route::put('/{fileName}', [FileController::class, 'update']);
@@ -76,22 +79,22 @@ Route::middleware([
   Route::prefix('collection')->group(function () {
     Route::get('/', [CollectionController::class, 'index']);
     Route::get('/{collection}', [CollectionController::class, 'show']);
-    Route::post('/', [CollectionController::class, 'store']);
-    Route::delete('/{collection}', [CollectionController::class, 'destroy']);
-    Route::post('/{collection}/field', [CollectionController::class, 'addField']);
-    Route::delete('/{collection}/field/{fieldName}', [CollectionController::class, 'removeField']);
+    Route::middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class])->post('/', [CollectionController::class, 'store']); // Restrict to admin
+    Route::middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class])->delete('/{collection}', [CollectionController::class, 'destroy']); // Restrict to admin
+    Route::middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class])->post('/{collection}/field', [CollectionController::class, 'addField']); // Restrict to admin
+    Route::middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class])->delete('/{collection}/field/{fieldName}', [CollectionController::class, 'removeField']); // Restrict to admin
 
     // Documents
     Route::get('/{collection}/document', [DocumentController::class, 'index']);
-    Route::get('/{collection}/document/{document}', [DocumentController::class, 'show']);
-    Route::post('/{collection}/document', [DocumentController::class, 'store']);
-    Route::patch('/{collection}/document/{document}', [DocumentController::class, 'update']);
-    Route::delete('/{collection}/document/{document}', [DocumentController::class, 'destroy']);
+    Route::get('/{collection}/document/{documentId}', [DocumentController::class, 'show']);
+    Route::middleware([AuthenticateTokenTenant::class])->post('/{collection}/document', [DocumentController::class, 'store']);
+    Route::middleware([AuthenticateTokenTenant::class])->patch('/{collection}/document/{documentId}', [DocumentController::class, 'update']);
+    Route::middleware([AuthenticateTokenTenant::class])->delete('/{collection}/document/{documentId}', [DocumentController::class, 'destroy']);
   });
 
-  Route::prefix('collection_field_type')->group(function () {
-    Route::get('/', [CollectionController::class, 'getFieldTypes']);
-    Route::post('/', [CollectionController::class, 'createFieldType']);
+  Route::prefix('collection_field_type')->middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class])->group(function () {
+    Route::get('/', [CollectionController::class, 'getFieldTypes']); // Restrict to admin
+    Route::post('/', [CollectionController::class, 'createFieldType']); // Restrict to admin
   });
 
 });

@@ -24,11 +24,15 @@ class DocumentController extends Controller
   public function index (Request $request, Collection $collection){
     try {
 
+      if(!$collection->public_read && (!$request->requesting_user || $request->requesting_user->public)){
+        return response([
+          'message' => 'Collection not available to public users.',
+        ], 401);
+      }
+
       $tableName = "collection-{$collection->name}";
-
       $query = DB::table($tableName);
-
-      $documents = $query->get();
+      $documents = $query->orderBy('updated_at', 'desc')->get();
 
       return response([
         'message' => 'All collections documents.',
@@ -44,6 +48,12 @@ class DocumentController extends Controller
   public function show (Request $request, Collection $collection){
     try {
 
+      if(!$collection->public_read && (!$request->requesting_user || $request->requesting_user->public)){
+        return response([
+          'message' => 'Collection not available to public users.',
+        ], 401);
+      }
+
       $collection->load(['fields', 'fields.type']);
 
       return response([
@@ -57,140 +67,25 @@ class DocumentController extends Controller
     }
   }
 
-  public function store (Request $request){
-    $request->validate([
-			'name' => ['required'],
-      'public' => ['required'],
-		]);
-
-    try {
-      $newCollection = Collection::create([
-        'name' => $request->name,
-        'public' => $request->public,
-      ]);
-
-      $tableName = "collection-{$newCollection->name}";
-
-      Schema::create($tableName, function (Blueprint $table) {
-        $table->id();
-        $table->foreignId('user_id')->references('id')->on('users')->onDelete('cascade');
-        $table->boolean('published')->default(false);
-        $table->timestamps();
-      });
-
-      return response([
-        'message' => 'New collection created.',
-        'collection' => $newCollection
-      ], 200);
-    } catch (Exception $e) {
-      return response([
-        'message' => 'Server error.'
-      ], 500);
-    }
-  }
-
-  public function addField (Request $request, Collection $collection){
-    $request->validate([
-			'name' => ['required'],
-      'type_id' => ['required'],
-		]);
-
+  public function store (Request $request, Collection $collection){
     try {
 
-      $collectionFieldType = CollectionFieldType::where('id', $request->type_id)->first();
+      $record = $request->all();
 
-      $newCollectionField = CollectionField::create([
-        'name' => $request->name,
-        'collection_id' => $collection->id,
-        'type_id' => $collectionFieldType->id
-      ]);
+      $record["user_id"] = $request->requesting_user->id;
+      $record["published"] = false;
+      $record["created_at"] = now();
+      $record["updated_at"] = now();
 
-      $newCollectionField->load(['type']);
+      unset($record['requesting_user']);
 
       $tableName = "collection-{$collection->name}";
-      Schema::table($tableName, function (Blueprint $table) use ($newCollectionField) {
-        switch ($newCollectionField->type->datatype){
-          case "tinyInteger":
-            $table->tinyInteger($newCollectionField->name)->nullable();
-            break;
-          case "unsignedTinyInteger":
-            $table->unsignedTinyInteger($newCollectionField->name)->nullable();
-            break;
-          case "smallInteger":
-            $table->smallInteger($newCollectionField->name)->nullable();
-            break;
-          case "unsignedSmallInteger":
-            $table->unsignedSmallInteger($newCollectionField->name)->nullable();
-            break;
-          case "integer":
-            $table->integer($newCollectionField->name)->nullable();
-            break;
-          case "unsignedInteger":
-            $table->unsignedInteger($newCollectionField->name)->nullable();
-            break;
-          case "mediumInteger":
-            $table->mediumInteger($newCollectionField->name)->nullable();
-            break;
-          case "unsignedMediumInteger":
-            $table->unsignedMediumInteger($newCollectionField->name)->nullable();
-            break;
-          case "bigInteger":
-            $table->bigInteger($newCollectionField->name)->nullable();
-            break;
-          case "unsignedBigInteger":
-            $table->unsignedBigInteger($newCollectionField->name)->nullable();
-            break;
-          case "decimal":
-            $table->decimal($newCollectionField->name)->nullable();
-            break;
-          case "unsignedDecimal":
-            $table->unsignedDecimal($newCollectionField->name)->nullable();
-            break;
-          case "float":
-            $table->float($newCollectionField->name)->nullable();
-            break;
-          case "double":
-            $table->double($newCollectionField->name)->nullable();
-            break;
-          case "char":
-            $table->char($newCollectionField->name)->nullable();
-            break;
-          case "string":
-            $table->string($newCollectionField->name)->nullable();
-            break;
-          case "tinyText":
-            $table->tinyText($newCollectionField->name)->nullable();
-            break;
-          case "text":
-            $table->text($newCollectionField->name)->nullable();
-            break;
-          case "mediumText":
-            $table->mediumText($newCollectionField->name)->nullable();
-            break;
-          case "longText":
-            $table->longText($newCollectionField->name)->nullable();
-            break;
-          case "boolean":
-            $table->boolean($newCollectionField->name)->nullable();
-            break;
-          case "date":
-            $table->date($newCollectionField->name)->nullable();
-            break;
-          case "time":
-            $table->time($newCollectionField->name)->nullable();
-            break;
-          case "dateTime":
-            $table->dateTime($newCollectionField->name)->nullable();
-            break;
-          case "timestamp":
-            $table->timestamp($newCollectionField->name)->nullable();
-            break;
-        }
-      });
+      $newDocumentId = DB::table($tableName)->insertGetId($record);
+      $newDocument = DB::table($tableName)->where('id', $newDocumentId)->first();
 
       return response([
-        'message' => 'Collection field added.',
-        'field' => $newCollectionField->load(['type'])
+        'message' => 'New document created.',
+        'document' => $newDocument,
       ], 200);
     } catch (Exception $e) {
       return response([
@@ -199,19 +94,19 @@ class DocumentController extends Controller
     }
   }
 
-  public function removeField (Request $request, Collection $collection, $fieldName){
+  public function update (Request $request, Collection $collection, $documentId){
     try {
 
-      $collectionFieldTypeRemoved = CollectionField::where('collection_id', $collection->id)->where('name', $fieldName)->delete();
+      $updatedDocument = $request->all();
+      unset($updatedDocument['requesting_user']);
 
       $tableName = "collection-{$collection->name}";
-      Schema::table($tableName, function (Blueprint $table) use ($fieldName) {
-        $table->dropColumn($fieldName);
-      });
+      DB::table($tableName)->where('id', $documentId)->update($updatedDocument);
+      $updated = DB::table($tableName)->where('id', $documentId)->first();
 
       return response([
-        'message' => 'Collection field removed.',
-        '$collectionFieldTypeRemoved' => $collectionFieldTypeRemoved
+        'message' => 'Document removed.',
+        'document' => $updated
       ], 200);
     } catch (Exception $e) {
       return response([
@@ -220,62 +115,14 @@ class DocumentController extends Controller
     }
   }
 
-  public function destroy (Request $request, Collection $collection){
+  public function destroy (Request $request, Collection $collection, $documentId){
     try {
 
       $tableName = "collection-{$collection->name}";
-      Schema::dropIfExists($tableName);
-
-      $collection->delete();
+      $deleted = DB::table($tableName)->where('id', $documentId)->delete();
 
       return response([
-        'message' => 'Collection removed.'
-      ], 200);
-    } catch (Exception $e) {
-      return response([
-        'message' => 'Server error.'
-      ], 500);
-    }
-  }
-
-
-
-
-  // Field types
-  // TODO: Move to own controller
-  public function getFieldTypes(Request $request){
-    try {
-
-      $query = CollectionFieldType::query();
-      $types = $query->get();
-
-      return response([
-        'message' => 'List all collection field types.',
-        'types' => $types
-      ], 200);
-    } catch (Exception $e) {
-      return response([
-        'message' => 'Server error.'
-      ], 500);
-    }
-  }
-
-  public function createFieldType(Request $request){
-
-    $request->validate([
-			'name' => ['required'],
-      'datatype' => ['required'],
-		]);
-
-    try {
-      $newCollectionFieldType = CollectionFieldType::create([
-        'name' => $request->name,
-        'datatype' => $request->datatype,
-      ]);
-
-      return response([
-        'message' => 'New collection field type created.',
-        'type' => $newCollectionFieldType
+        'message' => 'Document removed.',
       ], 200);
     } catch (Exception $e) {
       return response([

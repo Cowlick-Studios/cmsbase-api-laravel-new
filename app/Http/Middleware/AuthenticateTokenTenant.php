@@ -10,7 +10,7 @@ use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 use App\Models\User;
 
-class AuthenticateToken
+class AuthenticateTokenTenant
 {
     /**
      * Handle an incoming request.
@@ -62,6 +62,12 @@ class AuthenticateToken
           return response([
             'message' => 'No matching user.',
           ], 404);
+        }
+
+        if($user->blocked){
+          return response([
+            'message' => 'You have been blocked.',
+          ], 401);
         }
 
         $request['requesting_user'] = $user;

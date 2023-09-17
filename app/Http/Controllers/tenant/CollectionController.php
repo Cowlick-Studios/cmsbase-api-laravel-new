@@ -23,13 +23,19 @@ class CollectionController extends Controller
 
   public function index (Request $request){
     try {
+
       $query = Collection::query();
       $query->with(['fields', 'fields.type']);
+
+      if(!$request->requesting_user || $request->requesting_user->public){
+        $query->where('public_read', true);
+      }
+      
       $collections = $query->get();
 
       return response([
         'message' => 'All collections.',
-        'collections' => $collections
+        'collections' => $collections,
       ], 200);
     } catch (Exception $e) {
       return response([
@@ -42,6 +48,12 @@ class CollectionController extends Controller
     try {
 
       $collection->load(['fields', 'fields.type']);
+
+      if(!$collection->public_read && (!$request->requesting_user || $request->requesting_user->public)){
+        return response([
+          'message' => 'Collection not available to public users.',
+        ], 401);
+      }
 
       return response([
         'message' => 'Collections.',
@@ -57,13 +69,19 @@ class CollectionController extends Controller
   public function store (Request $request){
     $request->validate([
 			'name' => ['required'],
-      'public' => ['required'],
+      'public_create' => ['required'],
+      'public_read' => ['required'],
+      'public_update' => ['required'],
+      'public_delete' => ['required'],
 		]);
 
     try {
       $newCollection = Collection::create([
         'name' => $request->name,
-        'public' => $request->public,
+        'public_create' => $request->public_create,
+        'public_read' => $request->public_read,
+        'public_update' => $request->public_update,
+        'public_delete' => $request->public_delete,
       ]);
 
       $tableName = "collection-{$newCollection->name}";
