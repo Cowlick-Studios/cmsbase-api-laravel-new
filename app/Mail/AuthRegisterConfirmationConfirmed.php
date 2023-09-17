@@ -9,20 +9,16 @@ use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
-class VerifyEmail extends Mailable
+class AuthRegisterConfirmationConfirmed extends Mailable
 {
     use Queueable, SerializesModels;
-
-    private $url;
-    private $code;
 
     /**
      * Create a new message instance.
      */
-    public function __construct($url, $code)
+    public function __construct()
     {
-      $this->url = $url;
-      $this->code = $code;
+        //
     }
 
     /**
@@ -31,7 +27,7 @@ class VerifyEmail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Verify Email',
+            subject: 'Account has been verified!',
         );
     }
 
@@ -41,11 +37,7 @@ class VerifyEmail extends Mailable
     public function content(): Content
     {
         return new Content(
-            markdown: 'emails.auth.verifyEmail',
-            with: [
-              'code' =>$this->code,
-              'url' => $this->url
-            ]
+            markdown: 'emails.auth.register.confirmation_confirmed',
         );
     }
 

@@ -15,7 +15,7 @@ use App\Http\Middleware\AdminUserOnlyTenant;
 use App\Http\Middleware\PublicUserOnlyTenant;
 
 // Controllers
-use App\Http\Controllers\AuthController;
+use App\Http\Controllers\tenant\AuthController;
 use App\Http\Controllers\tenant\DashboardController;
 use App\Http\Controllers\tenant\UserController;
 use App\Http\Controllers\tenant\FileController;
@@ -47,21 +47,29 @@ Route::middleware([
 
   Route::prefix('auth')->group(function () {
     Route::post('/login', [AuthController::class, 'login']);
+
+    Route::post('/register', [AuthController::class, 'register']);
+    Route::post('/register/confirm', [AuthController::class, 'registerConfirm']);
+
+    Route::post('/password_reset', [AuthController::class, 'passwordReset']);
+    Route::post('/password_reset/confirm', [AuthController::class, 'passwordResetConfirm']);
+
+    Route::post('/email_change', [AuthController::class, 'emailChange']);
+    Route::post('/email_change/confirm/old', [AuthController::class, 'emailChangeConfirmOld']);
+    Route::post('/email_change/confirm/new', [AuthController::class, 'emailChangeConfirmNew']);
   });
 
   Route::prefix('dashboard')->group(function () {
     Route::get('/', [DashboardController::class, 'index']);
   });
 
-  Route::prefix('user')->group(function () {
+  Route::prefix('user')->middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class])->group(function () {
     Route::get('/', [UserController::class, 'index']);
     Route::get('/{user}', [UserController::class, 'show']);
     Route::post('/', [UserController::class, 'create']);
     Route::put('/{user}', [UserController::class, 'update']);
     Route::patch('/{user}', [UserController::class, 'update']);
     Route::delete('/{user}', [UserController::class, 'destroy']);
-  
-    Route::post('/{user}/verify', [UserController::class, 'verifyEmail']);
   });
 
   Route::prefix('file')->middleware([AuthenticateTokenTenant::class])->group(function () {

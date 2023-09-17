@@ -8,14 +8,26 @@ use App\Mail\VerifyEmail;
 use Carbon\Carbon;
 use App\Http\Controllers\Controller;
 
-use App\Models\User;
-use App\Models\EmailVerification;
+use App\Models\tenant\User;
+use App\Models\tenant\UserRegister;
+
+use App\Mail\AuthRegisterConfirmationCode;
 
 class UserController extends Controller
 {
 
   private function getRandomString($length = 20){
     $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    $randomString = '';
+    for ($i = 0; $i < $length; $i++) {
+      $index = rand(0, strlen($characters) - 1);
+      $randomString .= $characters[$index];
+    }
+    return $randomString;
+  }
+
+  private function generateVerificationCode($length = 6){
+    $characters = '0123456789';
     $randomString = '';
     for ($i = 0; $i < $length; $i++) {
       $index = rand(0, strlen($characters) - 1);
@@ -65,21 +77,23 @@ class UserController extends Controller
 
     try {
 
-      // Create tenant
+      // Create user
       $user = new User;
       $user->name = $request->name;
       $user->email = $request->email;
-      $user->password = $request->password;
+      $user->password = bcrypt($request->password);
+      $user->public = false;
+      $user->blocked = false;
       $user->save();
 
       // Create email verification
-      $emailVerification = new EmailVerification;
-      $emailVerification->user_id = $user->id;
-      $emailVerification->code = $this->getRandomString(rand(20, 30));
+      $emailVerification = new UserRegister;
+      $emailVerification->email = $request->email;
+      $emailVerification->verification_code = $this->generateVerificationCode();
       $emailVerification->save();
 
       // Send mail confirmation
-      Mail::to($user)->send(new VerifyEmail('', $emailVerification->code));
+      Mail::to($user)->send(new AuthRegisterConfirmationCode('', $emailVerification->code));
 
       return response([
         'message' => 'User created.',
