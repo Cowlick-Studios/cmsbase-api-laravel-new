@@ -13,12 +13,12 @@ return new class extends Migration
     {
         Schema::create('files', function (Blueprint $table) {
             $table->id();
-            $table->string('disk')->default('local');
+            $table->string('disk')->default('public');
             $table->string('name')->unique();
             $table->string('extension');
             $table->string('mime_type');
-            $table->string('path');
-            $table->string('collection')->nullable();
+            $table->string('path')->unique();
+            $table->foreignId('collection_id')->nullable()->references('id')->on('file_collections')->onDelete('cascade');
             $table->unsignedBigInteger('width')->nullable();
             $table->unsignedBigInteger('height')->nullable();
             $table->unsignedBigInteger('size');

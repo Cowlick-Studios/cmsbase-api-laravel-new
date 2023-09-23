@@ -28,7 +28,7 @@ class DocumentController extends Controller
 
       if(!$collection->public_read && (!$request->requesting_user || $request->requesting_user->public)){
         return response([
-          'message' => 'Collection not available to public users.',
+          'message' => 'Public users cannot perform read operations on this collection.',
         ], 401);
       }
 
@@ -54,7 +54,7 @@ class DocumentController extends Controller
 
       if(!$collection->public_read && (!$request->requesting_user || $request->requesting_user->public)){
         return response([
-          'message' => 'Collection not available to public users.',
+          'message' => 'Public users cannot perform read operations on this collection.',
         ], 401);
       }
 
@@ -77,6 +77,12 @@ class DocumentController extends Controller
     try {
 
       $collection = Collection::with(['fields', 'fields.type'])->where('name', $collectionName)->first();
+
+      if(!$collection->public_write && $request->requesting_user->public){
+        return response([
+          'message' => 'Public users cannot perform write operations on this collection.',
+        ], 401);
+      }
 
       $record = $request->all();
 
@@ -107,15 +113,35 @@ class DocumentController extends Controller
 
       $collection = Collection::with(['fields', 'fields.type'])->where('name', $collectionName)->first();
 
-      $updatedDocument = $request->all();
-      unset($updatedDocument['requesting_user']);
-
       $tableName = "collection-{$collection->name}";
-      DB::table($tableName)->where('id', $documentId)->update($updatedDocument);
-      $updated = DB::table($tableName)->where('id', $documentId)->first();
+      $document = DB::table($tableName)->where('id', $documentId)->first();
+
+      if(!$collection->public_update && $request->requesting_user->public){
+        return response([
+          'message' => 'Public users cannot perform update operations on this collection.',
+        ], 401);
+      }
+
+      if(!$request->requesting_user->public || ($request->requesting_user->public && $request->requesting_user->id == $document->user_id)){
+        $updatedDocument = $request->all();
+        $updatedDocument["updated_at"] = now();
+
+        unset($updatedDocument['id']);
+        unset($updatedDocument['user_id']);
+        unset($updatedDocument['created_at']);
+        unset($updatedDocument['requesting_user']);
+
+        
+        DB::table($tableName)->where('id', $documentId)->update($updatedDocument);
+        $updated = DB::table($tableName)->where('id', $documentId)->first();
+      } else {
+        return response([
+          'message' => 'You do not have permission to edit this document.'
+        ], 401);
+      }
 
       return response([
-        'message' => 'Document removed.',
+        'message' => 'Document updated.',
         'document' => $updated
       ], 200);
     } catch (Exception $e) {
@@ -131,7 +157,22 @@ class DocumentController extends Controller
       $collection = Collection::with(['fields', 'fields.type'])->where('name', $collectionName)->first();
 
       $tableName = "collection-{$collection->name}";
-      $deleted = DB::table($tableName)->where('id', $documentId)->delete();
+      $document = DB::table($tableName)->where('id', $documentId)->first();
+
+      if(!$collection->public_delete && $request->requesting_user->public){
+        return response([
+          'message' => 'Public users cannot perform delete operations on this collection.',
+        ], 401);
+      }
+
+      if(!$request->requesting_user->public || ($request->requesting_user->public && $request->requesting_user->id == $document->user_id)){
+        $tableName = "collection-{$collection->name}";
+        $deleted = DB::table($tableName)->where('id', $documentId)->delete();
+      } else {
+        return response([
+          'message' => 'You do not have permission to delete this document.'
+        ], 401);
+      }
 
       return response([
         'message' => 'Document removed.',

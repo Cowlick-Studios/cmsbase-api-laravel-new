@@ -11,6 +11,7 @@ use Stancl\Tenancy\Middleware\InitializeTenancyByPath;
 // Middleware
 use App\Http\Middleware\AuthenticateToken;
 use App\Http\Middleware\AuthenticateTokenTenant;
+use App\Http\Middleware\AuthenticateTokenTenantOptional;
 use App\Http\Middleware\AdminUserOnlyTenant;
 use App\Http\Middleware\PublicUserOnlyTenant;
 
@@ -72,31 +73,22 @@ Route::middleware([
     Route::delete('/{user}', [UserController::class, 'destroy']);
   });
 
-  Route::prefix('file')->middleware([AuthenticateTokenTenant::class])->group(function () {
-    Route::get('/', [FileController::class, 'index']);
-    Route::post('/', [FileController::class, 'upload']);
-    Route::put('/{fileName}', [FileController::class, 'update']);
-    Route::patch('/{fileName}', [FileController::class, 'update']);
-
-    Route::get('/{fileName}', [FileController::class, 'retrieveFile']);
-    // Route::get('/{collection}/{fileName}', [FileController::class, 'retrieveFileByCollection']);
-    Route::delete('/{fileName}', [FileController::class, 'destroyFile']);
-    // Route::delete('/{collection}/{fileName}', [FileController::class, 'destroyFileByCollection']);
-  });
-
   Route::prefix('collection')->group(function () {
-    Route::get('/', [CollectionController::class, 'index']);
-    Route::get('/{collectionName}', [CollectionController::class, 'show']);
+    Route::middleware([AuthenticateTokenTenantOptional::class])->get('/', [CollectionController::class, 'index']);
+    Route::middleware([AuthenticateTokenTenantOptional::class])->get('/{collectionName}', [CollectionController::class, 'show']);
     Route::middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class])->post('/', [CollectionController::class, 'store']);
+    Route::middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class])->patch('/{collectionName}', [CollectionController::class, 'update']);
+    Route::middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class])->put('/{collectionName}', [CollectionController::class, 'update']);
     Route::middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class])->delete('/{collectionName}', [CollectionController::class, 'destroy']);
     Route::middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class])->post('/{collectionName}/field', [CollectionController::class, 'addField']);
     Route::middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class])->delete('/{collectionName}/field/{fieldName}', [CollectionController::class, 'removeField']);
 
     // Documents
-    Route::get('/{collectionName}/document', [DocumentController::class, 'index']);
-    Route::get('/{collectionName}/document/{documentId}', [DocumentController::class, 'show']);
+    Route::middleware([AuthenticateTokenTenantOptional::class])->get('/{collectionName}/document', [DocumentController::class, 'index']);
+    Route::middleware([AuthenticateTokenTenantOptional::class])->get('/{collectionName}/document/{documentId}', [DocumentController::class, 'show']);
     Route::middleware([AuthenticateTokenTenant::class])->post('/{collectionName}/document', [DocumentController::class, 'store']);
     Route::middleware([AuthenticateTokenTenant::class])->patch('/{collectionName}/document/{documentId}', [DocumentController::class, 'update']);
+    Route::middleware([AuthenticateTokenTenant::class])->put('/{collectionName}/document/{documentId}', [DocumentController::class, 'update']);
     Route::middleware([AuthenticateTokenTenant::class])->delete('/{collectionName}/document/{documentId}', [DocumentController::class, 'destroy']);
   });
 
@@ -105,4 +97,24 @@ Route::middleware([
     Route::post('/', [CollectionController::class, 'createFieldType']);
   });
 
+  Route::prefix('file')->group(function () {
+    Route::get('/', [FileController::class, 'index']);
+    Route::middleware([AuthenticateTokenTenant::class])->post('/', [FileController::class, 'upload']);
+    Route::middleware([AuthenticateTokenTenant::class])->post('/bulk', [FileController::class, 'uploadBulk']);
+    Route::middleware([AuthenticateTokenTenant::class])->put('/{fileName}', [FileController::class, 'update']);
+    Route::middleware([AuthenticateTokenTenant::class])->patch('/{fileName}', [FileController::class, 'update']);
+    Route::middleware([AuthenticateTokenTenant::class])->delete('/{fileName}', [FileController::class, 'destroy']);
+
+    Route::get('/{fileName}', [FileController::class, 'retrieveFile']);
+  });
+
+  Route::prefix('file_type')->group(function () {
+    Route::get('/', [FileController::class, 'index']);
+    Route::middleware([AuthenticateTokenTenant::class])->post('/', [FileController::class, 'upload']);
+    Route::middleware([AuthenticateTokenTenant::class])->put('/{fileName}', [FileController::class, 'update']);
+    Route::middleware([AuthenticateTokenTenant::class])->patch('/{fileName}', [FileController::class, 'update']);
+    Route::middleware([AuthenticateTokenTenant::class])->delete('/{fileName}', [FileController::class, 'destroy']);
+
+    Route::get('/{fileName}', [FileController::class, 'retrieveFile']);
+  });
 });

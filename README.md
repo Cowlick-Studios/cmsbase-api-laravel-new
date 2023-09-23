@@ -33,11 +33,32 @@ Below are the commands created to manage working with tenants, we also have a se
 # Seed tenants (NOTE: you must migrate and seed tenants separately, do not use combination command)
 ./vendor/bin/sail artisan tenants:seed
 
-# Delete tenant (removes tenant records and schema)
+# Delete tenant (removes tenant records, schema and files)
 ./vendor/bin/sail artisan tenant:delete tenant
+
+# Delete ALL tenants (removes tenant records, schemas and files)
+./vendor/bin/sail artisan tenant:delete --all
 
 # List tenant
 ./vendor/bin/sail artisan tenant:list
+```
+
+## Total system refresh
+
+This is the process you can take to completely reset the system and add data for testing.
+
+``` bash
+# Remove all existing tenants
+./vendor/bin/sail artisan tenant:delete --all
+
+# Refresh and seed main application
+./vendor/bin/sail artisan migrate:fresh --seed
+
+# Create test tenant (You can create as many tenants you wish at this point)
+./vendor/bin/sail artisan tenant:create tenant admin@tenant.com password
+
+# Seed all created tenants
+./vendor/bin/sail artisan tenants:seed
 ```
 
 ## Easy setup

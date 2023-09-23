@@ -69,10 +69,10 @@ class CollectionController extends Controller
   public function store (Request $request){
     $request->validate([
 			'name' => ['required'],
-      'public_create' => ['required'],
-      'public_read' => ['required'],
-      'public_update' => ['required'],
-      'public_delete' => ['required'],
+      'public_create' => ['required', 'boolean'],
+      'public_read' => ['required', 'boolean'],
+      'public_update' => ['required', 'boolean'],
+      'public_delete' => ['required', 'boolean'],
 		]);
 
     try {
@@ -96,6 +96,31 @@ class CollectionController extends Controller
       return response([
         'message' => 'New collection created.',
         'collection' => $newCollection
+      ], 200);
+    } catch (Exception $e) {
+      return response([
+        'message' => 'Server error.'
+      ], 500);
+    }
+  }
+
+  public function update (Request $request, $collectionName){
+
+    $request->validate([
+      'public_create' => ['boolean'],
+      'public_read' => ['boolean'],
+      'public_update' => ['boolean'],
+      'public_delete' => ['boolean'],
+		]);
+
+    try {
+
+      $collection = Collection::where('name', $collectionName)->first();
+      $updatedCollection = $collection->update($request->all());
+
+      return response([
+        'message' => 'Collections.',
+        'collection' => $updatedCollection
       ], 200);
     } catch (Exception $e) {
       return response([
@@ -254,9 +279,6 @@ class CollectionController extends Controller
       ], 500);
     }
   }
-
-
-
 
   // Field types
   // TODO: Move to own controller

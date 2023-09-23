@@ -14,7 +14,7 @@ class RemoveTenant extends Command
      *
      * @var string
      */
-    protected $signature = 'tenant:delete {tenantName}';
+    protected $signature = 'tenant:delete {tenantName?} {--all}';
 
     /**
      * The console command description.
@@ -28,6 +28,15 @@ class RemoveTenant extends Command
      */
     public function handle()
     {
+      if($this->option('all')){
+        $tenants = Tenant::all();
+
+        foreach($tenants as $tenant){
+          $this->removeTenant($tenant);
+        }
+
+        return;
+      }
 
       $tenantName = $this->argument('tenantName');
 
@@ -39,6 +48,11 @@ class RemoveTenant extends Command
         return;
       }
 
+      $this->removeTenant($tenant);
+      return;
+    }
+
+    protected function removeTenant(Tenant $tenant){
       // Delete tenant record and DB
       $tenant->delete();
 
@@ -46,7 +60,6 @@ class RemoveTenant extends Command
       $this->rrmdir(base_path() . "/storage/tenant-{$tenant->id}");
 
       $this->info('Tenant ' . $tenant->id . ' deleted!');
-      return;
     }
 
     protected function rrmdir($dir) { 

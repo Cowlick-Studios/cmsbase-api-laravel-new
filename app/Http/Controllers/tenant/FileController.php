@@ -69,6 +69,7 @@ class FileController extends Controller
 
     $request->validate([
 			'file' => ['required'], // 'mimetypes:jpeg,jpg,png,svg,mp4,mov,avi,pdf'
+      'use_name' => ['boolean'],
 		]);
 
     try {
@@ -80,30 +81,41 @@ class FileController extends Controller
         ], 500);
       }
 
-      //$storagePath = $request->file('file')->store();
-      $storagePath = Storage::disk('local')->putFile(null, $request->file('file'));
-      [$width, $height] = getimagesize($request->file('file'));
-      $filename = pathinfo($storagePath, PATHINFO_FILENAME);
-      $extension = pathinfo($storagePath, PATHINFO_EXTENSION);
+      // $file = $request->hasFile('file');
+      $file = $request->file('file');
+
+      $storagePath = null;
+
+      if($request->use_name){
+        $existingFileRecord = File::where('name', Str::of(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME))->slug())->where('extension', $file->extension())->first();
+        if($existingFileRecord){
+          return response([
+            'message' => 'A file with this name already exists.'
+          ], 409);
+        } else {
+          $slugFileName = Str::of(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME))->slug() . "." . $file->extension();
+          $storagePath = Storage::disk('public')->putFileAs(null, $file, $slugFileName);
+        }
+      } else {
+        $storagePath = Storage::disk('public')->putFile(null, $file);
+      }
+
+      $explodeStoragePath = explode(".", $storagePath);
+
+      [$width, $height] = getimagesize($file);
+      $filename = $explodeStoragePath[0];
+      $extension = $explodeStoragePath[1];
 
       $newFile = new File;
 
-      if($request->has('use_name') && boolval($request->use_name)){
-        $filename = Str::of(pathinfo($request->file('file')->getClientOriginalName(), PATHINFO_FILENAME))->slug();
-        $extension = pathinfo($request->file('file')->getClientOriginalName(), PATHINFO_EXTENSION);
-      }
-
+      $newFile->disk = "public";
       $newFile->name = $filename;
       $newFile->extension = $extension;
-      $newFile->mime_type = $request->file('file')->getClientMimeType();
+      $newFile->mime_type = $file->getClientMimeType();
       $newFile->path = $storagePath;
       $newFile->width = $width;
       $newFile->height = $height;
-      $newFile->size = $request->file('file')->getSize();
-
-      if($request->has('collection')){
-        $newFile->collection = Str::of($request->collection)->slug();
-      }
+      $newFile->size = $file->getSize();
 
       if($request->has('alternative_text')){
         $newFile->alternative_text = $request->alternative_text;
@@ -119,30 +131,110 @@ class FileController extends Controller
       $urlPath = "/file/{$filePath}";
 
       if($request->has('collection')){
+        $newFile->collection = Str::of($request->collection)->slug();
         $urlPath = "/file/{$request->collection}/{$filePath}";
       }
 
       return response([
         'message' => 'File has been uploaded.',
-        'file' => $filePath,
-        'uri' => $urlPath
+        "original" => $file->getClientOriginalName(),
+        "uri" => $urlPath
       ], 200);
       
     } catch (QueryException $e) {
-
-      Storage::disk('local')->delete($storagePath);
-
-      if($e->getCode() == 23505){
-        return response([
-          'message' => 'A file with this name already exists.'
-        ], 409);
-      }
-
       return response([
         'message' => 'Server error.',
         'error' => $e
       ], 500);
     }
+  }
+
+  // Upload file to system
+  public function uploadBulk(Request $request){
+
+    $request->validate([
+			'use_name' => ['boolean'],
+		]);
+
+    $files = $request->file('files');
+
+    $uploads = [];
+    $failedUploads = [];
+
+    foreach ($files as $file) {
+      try {
+
+        $storagePath = null;
+
+        if($request->use_name){
+          $existingFileRecord = File::where('name', Str::of(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME))->slug())->where('extension', $file->extension())->first();
+          if($existingFileRecord){
+            array_push($failedUploads, [
+              "original" => $file->getClientOriginalName(),
+              "error" => "A file with this name already exists."
+            ]);
+            continue;
+          } else {
+            $slugFileName = Str::of(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME))->slug() . "." . $file->extension();
+            $storagePath = Storage::disk('public')->putFileAs(null, $file, $slugFileName);
+          }
+        } else {
+          $storagePath = Storage::disk('public')->putFile(null, $file);
+        }
+
+        $explodeStoragePath = explode(".", $storagePath);
+
+        [$width, $height] = getimagesize($file);
+        $filename = $explodeStoragePath[0];
+        $extension = $explodeStoragePath[1];
+  
+        $newFile = new File;
+  
+        $newFile->disk = "public";
+        $newFile->name = $filename;
+        $newFile->extension = $extension;
+        $newFile->mime_type = $file->getClientMimeType();
+        $newFile->path = $storagePath;
+        $newFile->width = $width;
+        $newFile->height = $height;
+        $newFile->size = $file->getSize();
+  
+        if($request->has('alternative_text')){
+          $newFile->alternative_text = $request->alternative_text;
+        }
+  
+        if($request->has('caption')){
+          $newFile->caption = $request->caption;
+        }
+  
+        $newFile->save();
+  
+        $filePath = "{$filename}.{$extension}";
+        $urlPath = "/file/{$filePath}";
+  
+        if($request->has('collection')){
+          $newFile->collection = Str::of($request->collection)->slug();
+          $urlPath = "/file/{$request->collection}/{$filePath}";
+        }
+
+        array_push($uploads, [
+          "original" => $file->getClientOriginalName(),
+          "uri" => $urlPath
+        ]);
+        
+      } catch (QueryException $e) {
+        array_push($failedUploads, [
+          "original" => $file->getClientOriginalName(),
+          "error" => "UNKNOWN"
+        ]);  
+      }
+    }
+
+    return response([
+      'message' => 'Bulk file upload.',
+      'uploaded' => $uploads,
+      'failed' => $failedUploads
+    ], 200);
   }
 
   // Update
@@ -155,7 +247,20 @@ class FileController extends Controller
       if($file){
 
         if($request->has('name')){
-          $file->name = $request->name;
+          $slugFileName = Str::of(pathinfo($request->name, PATHINFO_FILENAME))->slug();
+          $slugFilePath = Str::of(pathinfo($request->name, PATHINFO_FILENAME))->slug() . "." . $file->extension;
+
+          $existingFileRecord = File::where('path', $slugFilePath)->first();
+          if(!$existingFileRecord){
+            return response([
+              'message' => 'A file with this name already exists.'
+            ], 409);
+          }
+
+          Storage::disk('public')->move($file->path, $slugFilePath);
+
+          $file->name = $slugFileName;
+          $file->path = $slugFilePath;
         }
   
         if($request->has('alternative_text')){
@@ -196,93 +301,38 @@ class FileController extends Controller
     }
   }
 
+  // Delete file from system
+  public function destroy(Request $request, $fileName){
+    try {
+      $file = File::where('path', $fileName)->first();
+
+      if($file){
+        Storage::disk('public')->delete($file->path);
+        $file->delete();
+
+        return response([
+          'message' => 'File has been removed.'
+        ], 200);
+      } else {
+        return response([
+          'message' => 'No matching file found.'
+        ], 404);
+      }
+    } catch (Exception $e) {
+      return response([
+        'message' => 'Server error.'
+      ], 500);
+    }
+  }
+
   // Get file from system
   public function retrieveFile(Request $request, $fileName){
-    try {
-      [$name, $extension] = explode(".", $fileName);
-      $file = File::where('name', $name)->where('extension', $extension)->where('collection', null)->first();
-      if($file){
-        return response()->file(storage_path('app/' . $file->path));
-      } else {
-        return response([
-          'message' => 'No matching file found.'
-        ], 404);
-      }
-    } catch (Exception $e) {
+    if(Storage::disk('public')->exists($fileName)){
+      return response()->file(storage_path("app/public/{$fileName}"));
+    } else {
       return response([
-        'message' => 'Server error.'
-      ], 500);
+        'message' => 'No matching file found.'
+      ], 404);
     }
   }
-
-  // Get file from system by category
-  public function retrieveFileByCollection(Request $request, $collection, $fileName){
-    try {
-      [$name, $extension] = explode(".", $fileName);
-      $file = File::where('name', $name)->where('extension', $extension)->where('collection', Str::of($collection)->slug())->first();
-      if($file){
-        return response()->file(storage_path('app/' . $file->path));
-      } else {
-        return response([
-          'message' => 'No matching file found.'
-        ], 404);
-      }
-    } catch (Exception $e) {
-      return response([
-        'message' => 'Server error.'
-      ], 500);
-    }
-  }
-
-    // Delete file from system
-    public function destroyFile(Request $request, $fileName){
-      try {
-        [$name, $extension] = explode(".", $fileName);
-
-        $file = File::where('name', $name)->where('extension', $extension)->where('collection', null)->first();
-
-        if($file){
-          Storage::disk('local')->delete($file->path);
-          $file->delete();
-
-          return response([
-            'message' => 'File has been removed.'
-          ], 200);
-        } else {
-          return response([
-            'message' => 'No matching file found.'
-          ], 404);
-        }
-      } catch (Exception $e) {
-        return response([
-          'message' => 'Server error.'
-        ], 500);
-      }
-    }
-  
-    // Delete file from system by category
-    public function destroyFileByCollection(Request $request, $collection, $fileName){
-      try {
-        [$name, $extension] = explode(".", $fileName);
-
-        $file = File::where('name', $name)->where('extension', $extension)->where('collection', Str::of($collection)->slug())->first();
-
-        if($file){
-          Storage::disk('local')->delete($file->path);
-          $file->delete();
-
-          return response([
-            'message' => 'File has been removed.'
-          ], 200);
-        } else {
-          return response([
-            'message' => 'No matching file found.'
-          ], 404);
-        }
-      } catch (Exception $e) {
-        return response([
-          'message' => 'Server error.'
-        ], 500);
-      }
-    }
 }

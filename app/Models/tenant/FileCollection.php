@@ -7,21 +7,22 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class Collection extends Model
+class FileCollection extends Model
 {
     use HasFactory;
 
-    protected $table = 'collections';
+    protected $table = 'file_collections';
 
 		protected $fillable = [
       'name',
-      'public_create',
-      'public_read',
-      'public_update',
-      'public_delete'
     ];
 
-    public function fields(): HasMany{
-        return $this->hasMany(CollectionField::class, 'collection_id', 'id');
+    protected $hidden = [];
+
+    protected $appends = [];
+
+    public function files(): HasMany
+    {
+        return $this->hasMany(File::class, 'collection_id', 'id');
     }
 }
