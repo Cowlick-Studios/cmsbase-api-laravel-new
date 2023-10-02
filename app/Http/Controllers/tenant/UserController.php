@@ -73,6 +73,7 @@ class UserController extends Controller
 			'name' => ['required'],
       'email' => ['required'],
       'password' => ['required'],
+      'public' => ['required', 'boolean']
 		]);
 
     try {
@@ -82,7 +83,7 @@ class UserController extends Controller
       $user->name = $request->name;
       $user->email = $request->email;
       $user->password = bcrypt($request->password);
-      $user->public = false;
+      $user->public = $request->public;
       $user->blocked = false;
       $user->save();
 
@@ -114,10 +115,24 @@ class UserController extends Controller
   }
 
   public function update(Request $request, User $user){
+
+    $request->validate([
+			'public' => ['boolean'],
+      'blocked' => ['boolean'],
+		]);
+
     try {
 
       if($request->has('name')){
         $user->name = $request->name;
+      }
+
+      if($request->has('public')){
+        $user->public = $request->public;
+      }
+
+      if($request->has('blocked')){
+        $user->blocked = $request->blocked;
       }
 
       $user->save();

@@ -104,7 +104,7 @@ class AuthController extends Controller
 
       // System Config Info
       $appConfig = [
-        'collections' => Collection::with(['fields', 'fields.type'])->all(),
+        'collections' => Collection::with(['fields', 'fields.type'])->get(),
         'collection_field_types' => CollectionFieldType::all()
       ];
 
