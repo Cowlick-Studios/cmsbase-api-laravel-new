@@ -50,9 +50,9 @@ class AuthenticateToken
           }
         }
 
-        if($decodedArray['tenant'] == null){
+        if($decodedArray['tenant'] !== null){
           return response([
-            'message' => 'This token is not valid for this tenant.'
+            'message' => 'A tenant cannot access this route.'
           ], 401);
         }
 

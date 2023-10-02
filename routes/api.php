@@ -8,6 +8,7 @@ use App\Http\Middleware\AuthenticateToken;
 
 // Controllers
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\TenantController;
 use App\Http\Controllers\UserController;
 
@@ -28,9 +29,22 @@ Route::middleware(AuthenticateToken::class)->post('/test', function(Request $req
 
 Route::prefix('auth')->group(function () {
   Route::post('/login', [AuthController::class, 'login']);
+
+  Route::post('/register/confirm', [AuthController::class, 'registerConfirm']);
+
+  Route::post('/password_reset', [AuthController::class, 'passwordReset']);
+  Route::post('/password_reset/confirm', [AuthController::class, 'passwordResetConfirm']);
+
+  Route::post('/email_change', [AuthController::class, 'emailChange']);
+  Route::post('/email_change/confirm/old', [AuthController::class, 'emailChangeConfirmOld']);
+  Route::post('/email_change/confirm/new', [AuthController::class, 'emailChangeConfirmNew']);
 });
 
-Route::prefix('tenant')->group(function () {
+Route::prefix('dashboard')->middleware(AuthenticateToken::class)->group(function () {
+  Route::get('/', [DashboardController::class, 'index']);
+});
+
+Route::prefix('tenant')->middleware(AuthenticateToken::class)->group(function () {
   Route::get('/', [TenantController::class, 'index']);
   Route::get('/{tenant}', [TenantController::class, 'show']);
   Route::post('/', [TenantController::class, 'create']);
@@ -39,15 +53,13 @@ Route::prefix('tenant')->group(function () {
   Route::delete('/{tenant}', [TenantController::class, 'destroy']);
 });
 
-Route::prefix('user')->group(function () {
+Route::prefix('user')->middleware(AuthenticateToken::class)->group(function () {
   Route::get('/', [UserController::class, 'index']);
   Route::get('/{user}', [UserController::class, 'show']);
   Route::post('/', [UserController::class, 'create']);
   Route::put('/{user}', [UserController::class, 'update']);
   Route::patch('/{user}', [UserController::class, 'update']);
   Route::delete('/{user}', [UserController::class, 'destroy']);
-
-  Route::post('/{user}/verify', [UserController::class, 'verifyEmail']);
 
   // Forgot password
   // Verify forgotten password

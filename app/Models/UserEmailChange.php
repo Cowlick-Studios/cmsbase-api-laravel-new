@@ -5,15 +5,17 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class EmailVerification extends Model
+class UserEmailChange extends Model
 {
     use HasFactory;
 
-    protected $table = 'email_verifications';
+    protected $table = 'user_email_change';
 
 		protected $fillable = [
-      'user_id',
-      'code'
+      'email',
+      'verification_code_old',
+      'new_email',
+      'verification_code_new'
     ];
 
     protected $hidden = [];

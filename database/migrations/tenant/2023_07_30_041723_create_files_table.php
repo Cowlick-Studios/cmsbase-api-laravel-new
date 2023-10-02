@@ -18,7 +18,6 @@ return new class extends Migration
             $table->string('extension');
             $table->string('mime_type');
             $table->string('path')->unique();
-            $table->foreignId('collection_id')->nullable()->references('id')->on('file_collections')->onDelete('cascade');
             $table->unsignedBigInteger('width')->nullable();
             $table->unsignedBigInteger('height')->nullable();
             $table->unsignedBigInteger('size');

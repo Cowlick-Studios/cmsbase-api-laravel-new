@@ -13,6 +13,8 @@ return new class extends Migration
     {
         Schema::create('user_password_reset', function (Blueprint $table) {
             $table->id();
+            $table->string('email')->unique();
+            $table->string('verification_code');
             $table->timestamps();
         });
     }

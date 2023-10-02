@@ -39,7 +39,8 @@ class TenantController extends Controller
 
       return response([
         'message' => 'List all tenants.',
-        'tenants' => $tenants
+        'tenants' => $tenants,
+        'test' => disk_free_space('/')
       ], 200);
     } catch (Exception $e) {
       return response([

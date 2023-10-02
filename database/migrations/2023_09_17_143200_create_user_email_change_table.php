@@ -13,6 +13,10 @@ return new class extends Migration
     {
         Schema::create('user_email_change', function (Blueprint $table) {
             $table->id();
+            $table->string('email')->unique();
+            $table->string('verification_code_old');
+            $table->string('new_email')->unique();
+            $table->string('verification_code_new')->nullable();
             $table->timestamps();
         });
     }

@@ -11,9 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('file_collections', function (Blueprint $table) {
+        Schema::create('file_collection_pivot', function (Blueprint $table) {
             $table->id();
-            $table->string('name')->unique();
+            $table->foreignId('file_id')->references('id')->on('files')->onDelete('cascade');
+            $table->foreignId('collection_id')->references('id')->on('file_collections')->onDelete('cascade');
             $table->timestamps();
         });
     }
@@ -23,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('file_collections');
+        Schema::dropIfExists('file_collection_pivot');
     }
 };

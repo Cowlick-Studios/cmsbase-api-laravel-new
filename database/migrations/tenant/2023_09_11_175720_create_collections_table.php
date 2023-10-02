@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('collections', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
+            $table->string('name')->unique();
             $table->boolean('public_create')->default(false);
             $table->boolean('public_read')->default(true);
             $table->boolean('public_update')->default(false);

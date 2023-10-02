@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class FileCollection extends Model
 {
@@ -21,8 +22,7 @@ class FileCollection extends Model
 
     protected $appends = [];
 
-    public function files(): HasMany
-    {
-        return $this->hasMany(File::class, 'collection_id', 'id');
+    public function files(): BelongsToMany {
+      return $this->belongsToMany(File::class, 'file_collection_pivot', 'collection_id', 'file_id');
     }
 }

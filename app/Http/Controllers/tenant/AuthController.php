@@ -23,6 +23,8 @@ use App\Models\tenant\User;
 use App\Models\tenant\UserRegister;
 use App\Models\tenant\UserPasswordReset;
 use App\Models\tenant\UserEmailChange;
+use App\Models\tenant\Collection;
+use App\Models\tenant\CollectionFieldType;
 
 class AuthController extends Controller
 {
@@ -100,11 +102,18 @@ class AuthController extends Controller
       UserEmailChange::where('email', $user->email)->delete();
       UserEmailChange::where('new_email', $user->email)->delete();
 
+      // System Config Info
+      $appConfig = [
+        'collections' => Collection::with(['fields', 'fields.type'])->all(),
+        'collection_field_types' => CollectionFieldType::all()
+      ];
+
       return response([
         'message' => 'You have logged in successfully.',
         'access_token' => $jwt,
         'user' => $user,
-        'tenant' => $currentTenantName
+        'tenant' => $currentTenantName,
+        'config' => $appConfig
       ], 200);
     } catch (Exception $e) {
       return response([

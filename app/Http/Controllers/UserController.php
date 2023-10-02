@@ -7,14 +7,17 @@ use Illuminate\Support\Facades\Mail;
 use App\Mail\VerifyEmail;
 use Carbon\Carbon;
 
+// Mail
+use App\Mail\AuthRegisterConfirmationCode;
+
 use App\Models\User;
-use App\Models\EmailVerification;
+use App\Models\UserRegister;
 
 class UserController extends Controller
 {
 
-  private function getRandomString($length = 20){
-    $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  private function generateVerificationCode($length = 6){
+    $characters = '0123456789';
     $randomString = '';
     for ($i = 0; $i < $length; $i++) {
       $index = rand(0, strlen($characters) - 1);
@@ -72,13 +75,13 @@ class UserController extends Controller
       $user->save();
 
       // Create email verification
-      $emailVerification = new EmailVerification;
-      $emailVerification->user_id = $user->id;
-      $emailVerification->code = $this->getRandomString(rand(20, 30));
+      $emailVerification = new UserRegister;
+      $emailVerification->email = $request->email;
+      $emailVerification->verification_code = $this->generateVerificationCode();
       $emailVerification->save();
 
       // Send mail confirmation
-      Mail::to($user)->send(new VerifyEmail('', $emailVerification->code));
+      Mail::to($user)->send(new AuthRegisterConfirmationCode($emailVerification->verification_code));
 
       return response([
         'message' => 'User created.',

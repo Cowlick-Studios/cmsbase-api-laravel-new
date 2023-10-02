@@ -44,10 +44,9 @@ class CollectionController extends Controller
     }
   }
 
-  public function show (Request $request, $collectionName){
+  public function show (Request $request, Collection $collection){
     try {
-
-      $collection = Collection::with(['fields', 'fields.type'])->where('name', $collectionName)->first();
+      $collection = $collection->load(['fields', 'fields.type']);
 
       if(!$collection->public_read && (!$request->requesting_user || $request->requesting_user->public)){
         return response([
@@ -93,6 +92,8 @@ class CollectionController extends Controller
         $table->timestamps();
       });
 
+      $newCollection->load(['fields', 'fields.type']);
+
       return response([
         'message' => 'New collection created.',
         'collection' => $newCollection
@@ -104,7 +105,7 @@ class CollectionController extends Controller
     }
   }
 
-  public function update (Request $request, $collectionName){
+  public function update (Request $request, Collection $collection){
 
     $request->validate([
       'public_create' => ['boolean'],
@@ -115,7 +116,6 @@ class CollectionController extends Controller
 
     try {
 
-      $collection = Collection::where('name', $collectionName)->first();
       $updatedCollection = $collection->update($request->all());
 
       return response([
@@ -129,17 +129,17 @@ class CollectionController extends Controller
     }
   }
 
-  public function addField (Request $request, $collectionName){
+  public function addField (Request $request, Collection $collection){
     $request->validate([
 			'name' => ['required'],
-      'type' => ['required'],
+      'type_id' => ['required'],
 		]);
 
     try {
 
-      $collection = Collection::with(['fields', 'fields.type'])->where('name', $collectionName)->first();
+      $collection = $collection->load(['fields', 'fields.type']);
 
-      $collectionFieldType = CollectionFieldType::where('name', $request->type)->first();
+      $collectionFieldType = CollectionFieldType::where('id', $request->type_id)->first();
 
       $newCollectionField = CollectionField::create([
         'name' => $request->name,
@@ -241,15 +241,15 @@ class CollectionController extends Controller
     }
   }
 
-  public function removeField (Request $request, $collectionName, $fieldName){
+  public function removeField (Request $request, Collection $collection, CollectionField $field){
     try {
 
-      $collection = Collection::with(['fields', 'fields.type'])->where('name', $collectionName)->first();
-      $collectionFieldTypeRemoved = CollectionField::where('collection_id', $collection->id)->where('name', $fieldName)->delete();
+      $collection = $collection->load(['fields', 'fields.type']);
+      $field->delete();
 
       $tableName = "collection-{$collection->name}";
-      Schema::table($tableName, function (Blueprint $table) use ($fieldName) {
-        $table->dropColumn($fieldName);
+      Schema::table($tableName, function (Blueprint $table) use ($field) {
+        $table->dropColumn($field->name);
       });
 
       return response([

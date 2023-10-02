@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class File extends Model
 {
@@ -19,7 +20,6 @@ class File extends Model
       'extension',
       'mime_type',
       'path',
-      'collection',
       'width',
       'height',
       'size',
@@ -50,8 +50,7 @@ class File extends Model
       return $urlPath;
     }
 
-    public function collection(): BelongsTo
-    {
-      return $this->belongsTo(FileCollection::class, 'collection_id', 'id');
+    public function collections(): BelongsToMany {
+      return $this->belongsToMany(FileCollection::class, 'file_collection_pivot', 'file_id', 'collection_id');
     }
 }

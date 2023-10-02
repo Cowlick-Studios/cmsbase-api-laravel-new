@@ -8,7 +8,7 @@ use Symfony\Component\HttpFoundation\Response;
 
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
-use App\Models\User;
+use App\Models\tenant\User;
 
 class AuthenticateTokenTenant
 {

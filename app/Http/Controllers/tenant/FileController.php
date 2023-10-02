@@ -238,55 +238,43 @@ class FileController extends Controller
   }
 
   // Update
-  public function update(Request $request, $fileName){
+  public function update(Request $request, File $file){
     try {
-      [$name, $extension] = explode(".", $fileName);
+      if($request->has('name')){
+        $slugFileName = Str::of(pathinfo($request->name, PATHINFO_FILENAME))->slug();
+        $slugFilePath = Str::of(pathinfo($request->name, PATHINFO_FILENAME))->slug() . "." . $file->extension;
 
-      $file = File::where('name', $name)->where('extension', $extension)->first();
-
-      if($file){
-
-        if($request->has('name')){
-          $slugFileName = Str::of(pathinfo($request->name, PATHINFO_FILENAME))->slug();
-          $slugFilePath = Str::of(pathinfo($request->name, PATHINFO_FILENAME))->slug() . "." . $file->extension;
-
-          $existingFileRecord = File::where('path', $slugFilePath)->first();
-          if(!$existingFileRecord){
-            return response([
-              'message' => 'A file with this name already exists.'
-            ], 409);
-          }
-
-          Storage::disk('public')->move($file->path, $slugFilePath);
-
-          $file->name = $slugFileName;
-          $file->path = $slugFilePath;
-        }
-  
-        if($request->has('alternative_text')){
-          $file->alternative_text = $request->alternative_text;
-        }
-  
-        if($request->has('caption')){
-          $file->caption = $request->caption;
-        }
-  
-        if($request->has('collection')){
-          $file->collection = Str::of($request->collection)->slug();
+        $existingFileRecord = File::where('path', $slugFilePath)->first();
+        if(!$existingFileRecord){
+          return response([
+            'message' => 'A file with this name already exists.'
+          ], 409);
         }
 
-        $file->save();
+        Storage::disk('public')->move($file->path, $slugFilePath);
 
-        return response([
-          'message' => 'File updated.',
-          'file' => $file
-        ], 200);
-
-      } else {
-        return response([
-          'message' => 'No matching file found.'
-        ], 404);
+        $file->name = $slugFileName;
+        $file->path = $slugFilePath;
       }
+
+      if($request->has('alternative_text')){
+        $file->alternative_text = $request->alternative_text;
+      }
+
+      if($request->has('caption')){
+        $file->caption = $request->caption;
+      }
+
+      if($request->has('collection')){
+        $file->collection = Str::of($request->collection)->slug();
+      }
+
+      $file->save();
+
+      return response([
+        'message' => 'File updated.',
+        'file' => $file
+      ], 200);
     } catch (QueryException $e) {
 
       if($e->getCode() == 23505){
@@ -302,10 +290,8 @@ class FileController extends Controller
   }
 
   // Delete file from system
-  public function destroy(Request $request, $fileName){
+  public function destroy(Request $request, File $file){
     try {
-      $file = File::where('path', $fileName)->first();
-
       if($file){
         Storage::disk('public')->delete($file->path);
         $file->delete();

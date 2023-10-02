@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\tenant;
+namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
@@ -13,7 +13,6 @@ use Symfony\Component\Finder\Finder;
 
 class DashboardController extends Controller
 {
-
   private function bytesToMB($bytes) {
     $gb = $bytes / 1024 / 1024; // / 1024
     return $gb;
@@ -39,22 +38,13 @@ class DashboardController extends Controller
 
   public function index(Request $request){
     try {
-
-      $schemaName = "tenant-test";
-
-      $query = DB::select("
-        SELECT SUM(pg_total_relation_size(quote_ident(tablename)::text)) AS schema_size
-        FROM pg_tables
-        WHERE schemaname = '{$schemaName}'
-      "); // bytes
+      $totalDiskSpace = disk_total_space('/');
+      $freeDiskSpace = disk_free_space('/');
 
       return response([
         'message' => 'Dashboard.',
-        'tenant' => tenant(),
-        'database_usage_BYTES' => $query[0]->schema_size,
-        'file_usage_BYTES' => $this->getTotalSizeOfFilesInDirectory(storage_path()),
-        'database_usage' => $this->bytesToMB($query[0]->schema_size),
-        'file_usage' => $this->bytesToMB($this->getTotalSizeOfFilesInDirectory(storage_path()))
+        'total_disk_space' => $totalDiskSpace,
+        'free_disk_space' => $freeDiskSpace
       ], 200);
     } catch (Exception $e) {
       return response([
