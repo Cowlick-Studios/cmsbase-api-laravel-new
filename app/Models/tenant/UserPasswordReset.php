@@ -13,7 +13,8 @@ class userPasswordReset extends Model
 
 		protected $fillable = [
       'email',
-      'verification_code'
+      'verification_code',
+      'new_password'
     ];
 
     protected $hidden = [];

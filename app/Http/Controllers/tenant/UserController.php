@@ -40,7 +40,13 @@ class UserController extends Controller
     try {
 
       $query = User::query();
+      
       $query->orderBy('created_at', 'desc');
+
+      if($request->has('public')){
+        $query->where('public', $request->query('public'));
+      }
+
       $users = $query->get();
 
       return response([
@@ -94,7 +100,7 @@ class UserController extends Controller
       $emailVerification->save();
 
       // Send mail confirmation
-      Mail::to($user)->send(new AuthRegisterConfirmationCode('', $emailVerification->code));
+      Mail::to($user)->send(new AuthRegisterConfirmationCode($emailVerification->code));
 
       return response([
         'message' => 'User created.',

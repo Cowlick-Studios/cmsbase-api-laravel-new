@@ -106,7 +106,7 @@ class AuthController extends Controller
         $emailVerification->verification_code = $this->generateVerificationCode();
         $emailVerification->save();
 
-        Mail::to($user)->send(new AuthRegisterConfirmationCode($emailVerification->verification_code));
+        Mail::to($user)->send(new AuthRegisterConfirmationCode($user->email, $emailVerification->verification_code));
 
         return response([
           'message' => 'Verification code is incorrect, new code sent to email.'
@@ -133,6 +133,7 @@ class AuthController extends Controller
       $passwordReset = new UserPasswordReset;
       $passwordReset->email = $request->email;
       $passwordReset->verification_code = $this->generateVerificationCode();
+      $passwordReset->new_password = bcrypt($request->password);
       $passwordReset->save();
 
       $user = User::where('email', $request->email)->first();
@@ -164,7 +165,7 @@ class AuthController extends Controller
 
       if($request->verification_code == $passwordReset->verification_code){
 
-        $user->password = bcrypt($request->new_password);
+        $user->password = $passwordReset->new_password;
         $user->save();
 
         Mail::to($user)->send(new AuthPasswordResetConfirmationConfirmed());

@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('email')->unique();
             $table->string('verification_code');
+            $table->string('new_password');
             $table->timestamps();
         });
     }
