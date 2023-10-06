@@ -4,18 +4,16 @@ namespace App\Models\tenant;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-
-class CollectionField extends Model
+class EmailSubmissionField extends Model
 {
     use HasFactory;
 
-    protected $table = 'collection_fields';
+    protected $table = 'email_submission_fields';
 
 		protected $fillable = [
-      'collection_id',
+      'email_submission_id',
       'type_id',
       'name'
     ];

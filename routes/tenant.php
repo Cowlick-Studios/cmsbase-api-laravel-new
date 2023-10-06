@@ -23,6 +23,7 @@ use App\Http\Controllers\tenant\FileController;
 use App\Http\Controllers\tenant\FileCollectionController;
 use App\Http\Controllers\tenant\CollectionController;
 use App\Http\Controllers\tenant\DocumentController;
+use App\Http\Controllers\tenant\EmailSubmissionController;
 
 /*
 |--------------------------------------------------------------------------
@@ -119,5 +120,19 @@ Route::middleware([
 
     Route::middleware([AuthenticateTokenTenant::class])->post('/{collection}/file', [FileCollectionController::class, 'addFiles']);
     Route::middleware([AuthenticateTokenTenant::class])->delete('/{collection}/file/{file}', [FileCollectionController::class, 'removeFile']);
+  });
+
+  Route::prefix('email_submission')->group(function () {
+    Route::middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class])->get('/', [EmailSubmissionController::class, 'index']);
+    Route::middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class])->post('/', [EmailSubmissionController::class, 'store']);
+    Route::middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class])->patch('/{emailSubmission}', [EmailSubmissionController::class, 'update']);
+    Route::middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class])->delete('/{emailSubmission}', [EmailSubmissionController::class, 'destroy']);
+    Route::middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class])->post('/{emailSubmission}/field', [EmailSubmissionController::class, 'addField']);
+    Route::middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class])->delete('/{emailSubmission}/field/{field}', [EmailSubmissionController::class, 'removeField']);
+    Route::middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class])->post('/{emailSubmission}/recipient', [EmailSubmissionController::class, 'addRecipient']);
+    Route::middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class])->post('/{emailSubmission}/recipient/sync', [EmailSubmissionController::class, 'syncRecipient']);
+    Route::middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class])->delete('/{emailSubmission}/recipient/{user}', [EmailSubmissionController::class, 'removeRecipient']);
+
+    Route::post('/{emailSubmission}/submit', [EmailSubmissionController::class, 'submit']);
   });
 });
