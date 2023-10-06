@@ -13,16 +13,6 @@ use Symfony\Component\Finder\Finder;
 
 class DashboardController extends Controller
 {
-  private function bytesToMB($bytes) {
-    $gb = $bytes / 1024 / 1024; // / 1024
-    return $gb;
-  }
-
-  private function bytesToGB($bytes) {
-    $gb = $bytes / 1024 / 1024 / 1024;
-    return $gb;
-  }
-
   private function getTotalSizeOfFilesInDirectory($directoryPath){
     $finder = new Finder();
     $finder->files()->in($directoryPath);

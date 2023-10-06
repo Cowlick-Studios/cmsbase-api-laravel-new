@@ -14,14 +14,8 @@ use Symfony\Component\Finder\Finder;
 class DashboardController extends Controller
 {
 
-  private function bytesToMB($bytes) {
-    $gb = $bytes / 1024 / 1024; // / 1024
-    return $gb;
-  }
-
   private function bytesToGB($bytes) {
-    $gb = $bytes / 1024 / 1024 / 1024;
-    return $gb;
+    $bytes / 1000 / 1000 / 1000;
   }
 
   private function getTotalSizeOfFilesInDirectory($directoryPath){
@@ -39,8 +33,7 @@ class DashboardController extends Controller
 
   public function index(Request $request){
     try {
-
-      $schemaName = "tenant-test";
+      $schemaName = "tenant-" . tenant()->id;
 
       $query = DB::select("
         SELECT SUM(pg_total_relation_size(quote_ident(tablename)::text)) AS schema_size
@@ -51,10 +44,8 @@ class DashboardController extends Controller
       return response([
         'message' => 'Dashboard.',
         'tenant' => tenant(),
-        'database_usage_BYTES' => $query[0]->schema_size,
-        'file_usage_BYTES' => $this->getTotalSizeOfFilesInDirectory(storage_path()),
-        'database_usage' => $this->bytesToMB($query[0]->schema_size),
-        'file_usage' => $this->bytesToMB($this->getTotalSizeOfFilesInDirectory(storage_path()))
+        'database_usage' => (int) $query[0]->schema_size,
+        'file_usage' => $this->getTotalSizeOfFilesInDirectory(storage_path())
       ], 200);
     } catch (Exception $e) {
       return response([
