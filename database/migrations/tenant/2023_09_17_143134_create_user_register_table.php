@@ -16,6 +16,8 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->string('verification_code');
             $table->timestamps();
+
+            $table->index(['email']);
         });
     }
 

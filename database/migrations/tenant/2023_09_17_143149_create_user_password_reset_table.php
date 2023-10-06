@@ -17,6 +17,8 @@ return new class extends Migration
             $table->string('verification_code');
             $table->string('new_password');
             $table->timestamps();
+
+            $table->index(['email']);
         });
     }
 

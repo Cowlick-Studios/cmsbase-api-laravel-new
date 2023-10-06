@@ -49,6 +49,8 @@ return new class extends Migration
               "timestamp",
             ]);
             $table->timestamps();
+
+            $table->index(['name']);
         });
     }
 

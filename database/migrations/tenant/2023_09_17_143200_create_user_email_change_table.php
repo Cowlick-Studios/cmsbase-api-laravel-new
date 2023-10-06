@@ -18,6 +18,8 @@ return new class extends Migration
             $table->string('new_email')->unique();
             $table->string('verification_code_new')->nullable();
             $table->timestamps();
+
+            $table->index(['email']);
         });
     }
 

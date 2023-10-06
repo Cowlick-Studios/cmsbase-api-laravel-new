@@ -17,6 +17,8 @@ return new class extends Migration
             $table->foreignId('email_submission_id')->references('id')->on('email_submissions')->onDelete('cascade');
             $table->foreignId('type_id')->references('id')->on('collection_field_types')->onDelete('cascade');
             $table->timestamps();
+
+            $table->index(['name', 'email_submission_id' , 'type_id']);
         });
     }
 

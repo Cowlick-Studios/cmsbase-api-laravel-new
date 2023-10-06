@@ -16,6 +16,8 @@ return new class extends Migration
             $table->foreignId('email_submission_id')->references('id')->on('email_submissions')->onDelete('cascade');
             $table->foreignId('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->timestamps();
+
+            $table->index(['email_submission_id' , 'user_id']);
         });
     }
 

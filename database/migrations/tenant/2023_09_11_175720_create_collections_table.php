@@ -19,6 +19,8 @@ return new class extends Migration
             $table->boolean('public_update')->default(false);
             $table->boolean('public_delete')->default(false);
             $table->timestamps();
+
+            $table->index(['name']);
         });
     }
 

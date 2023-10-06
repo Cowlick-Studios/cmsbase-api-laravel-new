@@ -15,8 +15,10 @@ return new class extends Migration
             $table->id();
             $table->foreignId('collection_id')->references('id')->on('collections')->onDelete('cascade');
             $table->foreignId('type_id')->references('id')->on('collection_field_types')->onDelete('cascade');
-            $table->string('name');
+            $table->string('name')->unique();
             $table->timestamps();
+
+            $table->index(['name', 'collection_id' , 'type_id']);
         });
     }
 

@@ -24,6 +24,8 @@ return new class extends Migration
             $table->string('alternative_text')->nullable();
             $table->string('caption')->nullable();
             $table->timestamps();
+
+            $table->index(['name']);
         });
     }
 
