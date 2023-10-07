@@ -14,10 +14,13 @@ use App\Http\Middleware\AuthenticateTokenTenant;
 use App\Http\Middleware\AuthenticateTokenTenantOptional;
 use App\Http\Middleware\AdminUserOnlyTenant;
 use App\Http\Middleware\PublicUserOnlyTenant;
+use App\Http\Middleware\LogRequestResponse;
 
 // Controllers
 use App\Http\Controllers\tenant\AuthController;
 use App\Http\Controllers\tenant\DashboardController;
+use App\Http\Controllers\tenant\RequestController;
+use App\Http\Controllers\tenant\SettingsController;
 use App\Http\Controllers\tenant\UserController;
 use App\Http\Controllers\tenant\FileController;
 use App\Http\Controllers\tenant\FileCollectionController;
@@ -43,12 +46,7 @@ Route::middleware([
   'api'
 ])->group(function () {
 
-  Route::middleware([AuthenticateTokenTenant::class])->post('/test', function(Request $request){
-    $currentTenant = tenant();
-    return "This is a test! {$currentTenant->id}";
-  });
-
-  Route::prefix('auth')->group(function () {
+  Route::prefix('auth')->middleware([LogRequestResponse::class])->group(function () {
     Route::post('/login', [AuthController::class, 'login']);
 
     Route::post('/register', [AuthController::class, 'register']);
@@ -62,11 +60,21 @@ Route::middleware([
     Route::post('/email_change/confirm/new', [AuthController::class, 'emailChangeConfirmNew']);
   });
 
-  Route::prefix('dashboard')->group(function () {
+  Route::prefix('dashboard')->middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class, LogRequestResponse::class])->group(function () {
     Route::get('/', [DashboardController::class, 'index']);
   });
 
-  Route::prefix('user')->middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class])->group(function () {
+  Route::prefix('request')->middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class, LogRequestResponse::class])->group(function () {
+    Route::get('/', [RequestController::class, 'index']);
+    Route::delete('/', [RequestController::class, 'clear']);
+  });
+
+  Route::prefix('setting')->middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class, LogRequestResponse::class])->group(function () {
+    Route::get('/', [SettingsController::class, 'index']);
+    Route::patch('/{requestKey}', [SettingsController::class, 'update']);
+  });
+
+  Route::prefix('user')->middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class, LogRequestResponse::class])->group(function () {
     Route::get('/', [UserController::class, 'index']);
     Route::get('/{user}', [UserController::class, 'show']);
     Route::post('/', [UserController::class, 'create']);
@@ -76,63 +84,64 @@ Route::middleware([
   });
 
   Route::prefix('collection')->group(function () {
-    Route::middleware([AuthenticateTokenTenantOptional::class])->get('/', [CollectionController::class, 'index']);
-    Route::middleware([AuthenticateTokenTenantOptional::class])->get('/{collection}', [CollectionController::class, 'show']);
-    Route::middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class])->post('/', [CollectionController::class, 'store']);
-    Route::middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class])->patch('/{collection}', [CollectionController::class, 'update']);
-    Route::middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class])->put('/{collection}', [CollectionController::class, 'update']);
-    Route::middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class])->delete('/{collection}', [CollectionController::class, 'destroy']);
-    Route::middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class])->post('/{collection}/field', [CollectionController::class, 'addField']);
-    Route::middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class])->delete('/{collection}/field/{field}', [CollectionController::class, 'removeField']);
+    Route::middleware([AuthenticateTokenTenantOptional::class, LogRequestResponse::class])->get('/', [CollectionController::class, 'index']);
+    Route::middleware([AuthenticateTokenTenantOptional::class, LogRequestResponse::class])->get('/{collection}', [CollectionController::class, 'show']);
+    Route::middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class, LogRequestResponse::class])->post('/', [CollectionController::class, 'store']);
+    Route::middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class, LogRequestResponse::class])->patch('/{collection}', [CollectionController::class, 'update']);
+    Route::middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class, LogRequestResponse::class])->put('/{collection}', [CollectionController::class, 'update']);
+    Route::middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class, LogRequestResponse::class])->delete('/{collection}', [CollectionController::class, 'destroy']);
+    Route::middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class, LogRequestResponse::class])->post('/{collection}/field', [CollectionController::class, 'addField']);
+    Route::middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class, LogRequestResponse::class])->delete('/{collection}/field/{field}', [CollectionController::class, 'removeField']);
 
     // Documents
-    Route::middleware([AuthenticateTokenTenantOptional::class])->get('/{collection}/document', [DocumentController::class, 'index']);
-    Route::middleware([AuthenticateTokenTenantOptional::class])->get('/{collection}/document/{documentId}', [DocumentController::class, 'show']);
-    Route::middleware([AuthenticateTokenTenant::class])->post('/{collection}/document', [DocumentController::class, 'store']);
-    Route::middleware([AuthenticateTokenTenant::class])->patch('/{collection}/document/{documentId}', [DocumentController::class, 'update']);
-    Route::middleware([AuthenticateTokenTenant::class])->put('/{collection}/document/{documentId}', [DocumentController::class, 'update']);
-    Route::middleware([AuthenticateTokenTenant::class])->delete('/{collection}/document/{documentId}', [DocumentController::class, 'destroy']);
+    Route::middleware([AuthenticateTokenTenantOptional::class, LogRequestResponse::class])->get('/{collection}/document', [DocumentController::class, 'index']);
+    Route::middleware([AuthenticateTokenTenantOptional::class, LogRequestResponse::class])->get('/{collection}/document/{documentId}', [DocumentController::class, 'show']);
+    Route::middleware([AuthenticateTokenTenant::class, LogRequestResponse::class])->post('/{collection}/document', [DocumentController::class, 'store']);
+    Route::middleware([AuthenticateTokenTenant::class, LogRequestResponse::class])->patch('/{collection}/document/{documentId}', [DocumentController::class, 'update']);
+    Route::middleware([AuthenticateTokenTenant::class, LogRequestResponse::class])->put('/{collection}/document/{documentId}', [DocumentController::class, 'update']);
+    Route::middleware([AuthenticateTokenTenant::class, LogRequestResponse::class])->delete('/{collection}/document/{documentId}', [DocumentController::class, 'destroy']);
   });
 
-  Route::prefix('collection_field_type')->middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class])->group(function () {
+  Route::prefix('collection_field_type')->middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class, LogRequestResponse::class])->group(function () {
     Route::get('/', [CollectionController::class, 'getFieldTypes']);
     Route::post('/', [CollectionController::class, 'createFieldType']);
   });
 
   Route::prefix('file')->group(function () {
-    Route::get('/', [FileController::class, 'index']);
-    Route::middleware([AuthenticateTokenTenant::class])->post('/', [FileController::class, 'upload']);
-    Route::middleware([AuthenticateTokenTenant::class])->post('/bulk', [FileController::class, 'uploadBulk']);
-    Route::middleware([AuthenticateTokenTenant::class])->put('/{file}', [FileController::class, 'update']);
-    Route::middleware([AuthenticateTokenTenant::class])->patch('/{file}', [FileController::class, 'update']);
-    Route::middleware([AuthenticateTokenTenant::class])->delete('/{file}', [FileController::class, 'destroy']);
+    Route::middleware([LogRequestResponse::class])->get('/', [FileController::class, 'index']);
+    Route::middleware([AuthenticateTokenTenant::class, LogRequestResponse::class])->post('/', [FileController::class, 'upload']);
+    Route::middleware([AuthenticateTokenTenant::class, LogRequestResponse::class])->post('/bulk', [FileController::class, 'uploadBulk']);
+    Route::middleware([AuthenticateTokenTenant::class, LogRequestResponse::class])->put('/{file}', [FileController::class, 'update']);
+    Route::middleware([AuthenticateTokenTenant::class, LogRequestResponse::class])->patch('/{file}', [FileController::class, 'update']);
+    Route::middleware([AuthenticateTokenTenant::class, LogRequestResponse::class])->delete('/{file}', [FileController::class, 'destroy']);
 
-    Route::get('/{fileName}', [FileController::class, 'retrieveFile']);
+    Route::middleware([LogRequestResponse::class])->get('/{fileName}', [FileController::class, 'retrieveFile']);
   });
 
   Route::prefix('file_collection')->group(function () {
-    Route::get('/', [FileCollectionController::class, 'index']);
-    Route::get('/{collection}', [FileCollectionController::class, 'show']);
-    Route::middleware([AuthenticateTokenTenant::class])->post('/', [FileCollectionController::class, 'create']);
-    Route::middleware([AuthenticateTokenTenant::class])->put('/{collection}', [FileCollectionController::class, 'update']);
-    Route::middleware([AuthenticateTokenTenant::class])->patch('/{collection}', [FileCollectionController::class, 'update']);
-    Route::middleware([AuthenticateTokenTenant::class])->delete('/{collection}', [FileCollectionController::class, 'destroy']);
+    Route::middleware([LogRequestResponse::class])->get('/', [FileCollectionController::class, 'index']);
+    Route::middleware([LogRequestResponse::class])->get('/{collection}', [FileCollectionController::class, 'show']);
+    Route::middleware([AuthenticateTokenTenant::class, LogRequestResponse::class])->post('/', [FileCollectionController::class, 'create']);
+    Route::middleware([AuthenticateTokenTenant::class, LogRequestResponse::class])->put('/{collection}', [FileCollectionController::class, 'update']);
+    Route::middleware([AuthenticateTokenTenant::class, LogRequestResponse::class])->patch('/{collection}', [FileCollectionController::class, 'update']);
+    Route::middleware([AuthenticateTokenTenant::class, LogRequestResponse::class])->delete('/{collection}', [FileCollectionController::class, 'destroy']);
 
-    Route::middleware([AuthenticateTokenTenant::class])->post('/{collection}/file', [FileCollectionController::class, 'addFiles']);
-    Route::middleware([AuthenticateTokenTenant::class])->delete('/{collection}/file/{file}', [FileCollectionController::class, 'removeFile']);
+    Route::middleware([AuthenticateTokenTenant::class, LogRequestResponse::class])->post('/{collection}/file', [FileCollectionController::class, 'addFiles']);
+    Route::middleware([AuthenticateTokenTenant::class, LogRequestResponse::class])->delete('/{collection}/file/{file}', [FileCollectionController::class, 'removeFile']);
   });
 
   Route::prefix('email_submission')->group(function () {
-    Route::middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class])->get('/', [EmailSubmissionController::class, 'index']);
-    Route::middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class])->post('/', [EmailSubmissionController::class, 'store']);
-    Route::middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class])->patch('/{emailSubmission}', [EmailSubmissionController::class, 'update']);
-    Route::middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class])->delete('/{emailSubmission}', [EmailSubmissionController::class, 'destroy']);
-    Route::middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class])->post('/{emailSubmission}/field', [EmailSubmissionController::class, 'addField']);
-    Route::middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class])->delete('/{emailSubmission}/field/{field}', [EmailSubmissionController::class, 'removeField']);
-    Route::middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class])->post('/{emailSubmission}/recipient', [EmailSubmissionController::class, 'addRecipient']);
-    Route::middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class])->post('/{emailSubmission}/recipient/sync', [EmailSubmissionController::class, 'syncRecipient']);
-    Route::middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class])->delete('/{emailSubmission}/recipient/{user}', [EmailSubmissionController::class, 'removeRecipient']);
+    Route::middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class, LogRequestResponse::class])->get('/', [EmailSubmissionController::class, 'index']);
+    Route::middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class, LogRequestResponse::class])->post('/', [EmailSubmissionController::class, 'store']);
+    Route::middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class, LogRequestResponse::class])->patch('/{emailSubmission}', [EmailSubmissionController::class, 'update']);
+    Route::middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class, LogRequestResponse::class])->delete('/{emailSubmission}', [EmailSubmissionController::class, 'destroy']);
+    Route::middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class, LogRequestResponse::class])->post('/{emailSubmission}/field', [EmailSubmissionController::class, 'addField']);
+    Route::middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class, LogRequestResponse::class])->delete('/{emailSubmission}/field/{field}', [EmailSubmissionController::class, 'removeField']);
+    Route::middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class, LogRequestResponse::class])->post('/{emailSubmission}/recipient', [EmailSubmissionController::class, 'addRecipient']);
+    Route::middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class, LogRequestResponse::class])->post('/{emailSubmission}/recipient/sync', [EmailSubmissionController::class, 'syncRecipient']);
+    Route::middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class, LogRequestResponse::class])->delete('/{emailSubmission}/recipient/{user}', [EmailSubmissionController::class, 'removeRecipient']);
 
-    Route::post('/{emailSubmission}/submit', [EmailSubmissionController::class, 'submit']);
+    Route::middleware([LogRequestResponse::class])->post('/{emailSubmission}/submit', [EmailSubmissionController::class, 'submit']);
   });
+  
 });
