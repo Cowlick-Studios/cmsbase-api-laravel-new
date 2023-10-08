@@ -218,7 +218,9 @@ class EmailSubmissionController extends Controller
       }
 
       foreach ($emailSubmission->recipients as $recipient) {
-        Mail::to($recipient)->send(new EmailSubmissionMailer($emailSubmission, $formSubmissionObj));
+        if(!$recipient->blocked && $recipient->email_verified_at && !$recipient->public){ // Verify user is admin, verified and not blocked
+          Mail::to($recipient)->send(new EmailSubmissionMailer($emailSubmission, $formSubmissionObj));
+        }
       }
       
       return response([
