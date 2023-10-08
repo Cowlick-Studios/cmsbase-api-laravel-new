@@ -44,9 +44,9 @@ class CollectionController extends Controller
     }
   }
 
-  public function show (Request $request, Collection $collection){
+  public function show (Request $request, $collectionName){
     try {
-      $collection = $collection->load(['fields', 'fields.type']);
+      $collection = Collection::with(['fields', 'fields.type'])->where('name', $collectionName)->first();
 
       if(!$collection->public_read && (!$request->requesting_user || $request->requesting_user->public)){
         return response([

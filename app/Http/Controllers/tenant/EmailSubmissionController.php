@@ -206,10 +206,10 @@ class EmailSubmissionController extends Controller
     }
   }
 
-  public function submit (Request $request, EmailSubmission $emailSubmission){
+  public function submit (Request $request, $emailSubmissionName){
     try {
 
-      $emailSubmission = $emailSubmission->load(['fields', 'fields.type', 'recipients']);
+      $emailSubmission = EmailSubmission::with(['fields', 'fields.type', 'recipients'])->where('name', $emailSubmissionName)->first();
 
       $formSubmissionObj = [];
 
