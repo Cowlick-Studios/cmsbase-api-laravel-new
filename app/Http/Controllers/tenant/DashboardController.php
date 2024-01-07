@@ -17,24 +17,27 @@ use App\Models\tenant\Setting;
 class DashboardController extends Controller
 {
 
-  private function bytesToGB($bytes) {
+  private function bytesToGB($bytes)
+  {
     $bytes / 1000 / 1000 / 1000;
   }
 
-  private function getTotalSizeOfFilesInDirectory($directoryPath){
+  private function getTotalSizeOfFilesInDirectory($directoryPath)
+  {
     $finder = new Finder();
     $finder->files()->in($directoryPath);
 
     $totalSize = 0;
 
     foreach ($finder as $file) {
-        $totalSize += File::size($file->getRealPath());
+      $totalSize += File::size($file->getRealPath());
     }
 
     return $totalSize;
   }
 
-  public function index(Request $request){
+  public function index(Request $request)
+  {
     try {
 
       // Storage Limits
@@ -49,9 +52,12 @@ class DashboardController extends Controller
       $requestCount = null;
 
       $logRequestSetting = Setting::where('key', 'request_logging')->first();
-      if($logRequestSetting->value == 'true'){
-        $requestCount = RequestLog::where('created_at', '>=', now()->subHours(24))->count();
+      if ($logRequestSetting) {
+        if ($logRequestSetting->value == 'true') {
+          $requestCount = RequestLog::where('created_at', '>=', now()->subHours(24))->count();
+        }
       }
+
 
       return response([
         'message' => 'Dashboard.',

@@ -10,26 +10,29 @@ use Illuminate\Support\Facades\Storage;
 use App\Models\User;
 use App\Models\Tenant;
 use App\Models\tenant\CollectionFieldType;
+use App\Models\tenant\Setting;
 
 class TenantController extends Controller
 {
 
-  protected function rrmdir($dir) { 
-    if (is_dir($dir)) { 
+  protected function rrmdir($dir)
+  {
+    if (is_dir($dir)) {
       $objects = scandir($dir);
-      foreach ($objects as $object) { 
-        if ($object != "." && $object != "..") { 
-          if (is_dir($dir. DIRECTORY_SEPARATOR .$object) && !is_link($dir."/".$object))
-            $this->rrmdir($dir. DIRECTORY_SEPARATOR .$object);
+      foreach ($objects as $object) {
+        if ($object != "." && $object != "..") {
+          if (is_dir($dir . DIRECTORY_SEPARATOR . $object) && !is_link($dir . "/" . $object))
+            $this->rrmdir($dir . DIRECTORY_SEPARATOR . $object);
           else
-            unlink($dir. DIRECTORY_SEPARATOR .$object); 
-        } 
+            unlink($dir . DIRECTORY_SEPARATOR . $object);
+        }
       }
-      rmdir($dir); 
-    } 
+      rmdir($dir);
+    }
   }
 
-  public function index(Request $request){
+  public function index(Request $request)
+  {
     try {
 
       $query = Tenant::query();
@@ -49,7 +52,8 @@ class TenantController extends Controller
     }
   }
 
-  public function show(Request $request, Tenant $tenant){
+  public function show(Request $request, Tenant $tenant)
+  {
     try {
       return response([
         'message' => 'Tenant record.',
@@ -62,15 +66,16 @@ class TenantController extends Controller
     }
   }
 
-  public function create(Request $request){
+  public function create(Request $request)
+  {
 
     $request->validate([
-			'name' => ['required'],
+      'name' => ['required'],
       'storage_limit_file' => ['required'],
       'storage_limit_database' => ['required'],
       'email' => ['required'],
       'password' => ['required'],
-		]);
+    ]);
 
     try {
 
@@ -86,9 +91,9 @@ class TenantController extends Controller
       $tenant->save();
 
       // Create domains
-      foreach(config('tenancy.central_domains') as $centralDomain){
-        $tenant->domains()->create(['domain' => "{$tenantName}.{$centralDomain}"]);
-      }
+      // foreach(config('tenancy.central_domains') as $centralDomain){
+      //   $tenant->domains()->create(['domain' => "{$tenantName}.{$centralDomain}"]);
+      // }
 
       // Create tenant folder
       mkdir(storage_path("tenant-{$tenant->id}"));
@@ -112,53 +117,19 @@ class TenantController extends Controller
       // Seed tenant data
       $tenant->run(function (Tenant $tenant) {
 
-        $types = [
-          // integer
-          "tinyInteger",
-          "unsignedTinyInteger",
-          "smallInteger",
-          "unsignedSmallInteger",
-          "integer",
-          "unsignedInteger",
-          "mediumInteger",
-          "unsignedMediumInteger",
-          "bigInteger",
-          "unsignedBigInteger",
+        $types = config("cmsbase.collection_types");
 
-          // float
-          "decimal",
-          "unsignedDecimal",
-          "float",
-          "double",
-
-          // text
-          "char",
-          "string",
-          "tinyText",
-          "text",
-          "mediumText",
-          "longText",
-
-          //other
-          "boolean",
-          "date",
-          "time",
-          "dateTime",
-          "timestamp",
-        ];
-
-        foreach($types as $index => $type){
+        foreach ($types as $index => $type) {
           $collectionFieldType = CollectionFieldType::create([
-            'name' => $type,
+            'name' => $index,
             'datatype' => $type
           ]);
         }
 
-        $collectionFieldTypeRichText = CollectionFieldType::create([
-          'name' => "richText",
-          'datatype' => "longText"
+        $tenantRequestLoggingSetting = Setting::create([
+          'key' => "request_logging",
+          'value' => true
         ]);
-        
       });
 
       return response([
@@ -167,7 +138,7 @@ class TenantController extends Controller
       ], 200);
     } catch (QueryException $e) {
 
-      if($e->getCode() == 23505){
+      if ($e->getCode() == 23505) {
         return response([
           'message' => 'A file with this name already exists.'
         ], 409);
@@ -180,18 +151,19 @@ class TenantController extends Controller
     }
   }
 
-  public function update(Request $request, Tenant $tenant){
+  public function update(Request $request, Tenant $tenant)
+  {
     try {
 
-      if($request->has('storage_limit_file')){
+      if ($request->has('storage_limit_file')) {
         $tenant->storage_limit_file = (int) $request->storage_limit_file;
       }
 
-      if($request->has('storage_limit_database')){
+      if ($request->has('storage_limit_database')) {
         $tenant->storage_limit_database = (int) $request->storage_limit_database;
       }
 
-      if($request->has('disabled')){
+      if ($request->has('disabled')) {
         $tenant->disabled = boolval($request->disabled);
       }
 
@@ -208,7 +180,8 @@ class TenantController extends Controller
     }
   }
 
-  public function destroy(Request $request, Tenant $tenant){
+  public function destroy(Request $request, Tenant $tenant)
+  {
     try {
 
       $this->rrmdir(base_path() . "/storage/tenant-{$tenant->id}");

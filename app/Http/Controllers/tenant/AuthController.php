@@ -113,7 +113,7 @@ class AuthController extends Controller
         'access_token' => $jwt,
         'user' => $user,
         'tenant' => $currentTenantName,
-        'config' => $appConfig
+        'config' => $appConfig,
       ], 200);
     } catch (Exception $e) {
       return response([
