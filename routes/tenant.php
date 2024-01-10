@@ -27,6 +27,7 @@ use App\Http\Controllers\tenant\FileCollectionController;
 use App\Http\Controllers\tenant\CollectionController;
 use App\Http\Controllers\tenant\DocumentController;
 use App\Http\Controllers\tenant\EmailSubmissionController;
+use App\Http\Controllers\tenant\AnalyticsController;
 
 /*
 |--------------------------------------------------------------------------
@@ -67,6 +68,15 @@ Route::middleware([
   Route::prefix('request')->middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class, LogRequestResponse::class])->group(function () {
     Route::get('/', [RequestController::class, 'index']);
     Route::delete('/', [RequestController::class, 'clear']);
+  });
+
+  Route::prefix('analytics')->middleware([])->group(function () {
+    Route::post('/request', [AnalyticsController::class, 'client_request']);
+
+    Route::prefix('/')->middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class, LogRequestResponse::class])->group(function () {
+      // Route::get('/', [RequestController::class, 'index']);
+      // Route::delete('/', [RequestController::class, 'clear']);
+    });
   });
 
   Route::prefix('setting')->middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class, LogRequestResponse::class])->group(function () {
@@ -143,5 +153,4 @@ Route::middleware([
 
     Route::middleware([LogRequestResponse::class])->post('/{emailSubmissionName}/submit', [EmailSubmissionController::class, 'submit']);
   });
-  
 });
