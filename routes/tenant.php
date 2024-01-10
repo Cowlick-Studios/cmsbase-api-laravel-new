@@ -74,8 +74,7 @@ Route::middleware([
     Route::post('/request', [AnalyticsController::class, 'client_request']);
 
     Route::prefix('/')->middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class, LogRequestResponse::class])->group(function () {
-      // Route::get('/', [RequestController::class, 'index']);
-      // Route::delete('/', [RequestController::class, 'clear']);
+      Route::get('/', [AnalyticsController::class, 'index']);
     });
   });
 

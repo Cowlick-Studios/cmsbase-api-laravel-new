@@ -11,6 +11,26 @@ use App\Models\tenant\ClientRequestLog;
 
 class AnalyticsController extends Controller
 {
+
+  public function index(Request $request)
+  {
+    try {
+
+      $allUniqueUsers = ClientFingerprint::withCount('logs')->get();
+      $allRequests = ClientRequestLog::all();
+
+      return response([
+        'message' => 'Client analytics report.',
+        'unique_users' => $allUniqueUsers,
+        'all_requests' => $allRequests,
+      ], 200);
+    } catch (Exception $e) {
+      return response([
+        'message' => 'Server error.'
+      ], 500);
+    }
+  }
+
   public function client_request(Request $request)
   {
     try {
