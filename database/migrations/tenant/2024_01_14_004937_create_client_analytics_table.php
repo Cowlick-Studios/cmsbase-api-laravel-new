@@ -11,16 +11,13 @@ return new class extends Migration
    */
   public function up(): void
   {
-    Schema::create('client_request_logs', function (Blueprint $table) {
+    Schema::create('client_analytics', function (Blueprint $table) {
       $table->id();
-      $table->string('fingerprint');
-      $table->string('ip');
-      $table->text('user_agent');
-      $table->text('url');
-      $table->string('country_code');
+      $table->date('date');
+      $table->integer('request_count')->default(0);
       $table->timestamps();
 
-      $table->index(['fingerprint', 'id', 'url']);
+      $table->index(['date']);
     });
   }
 
@@ -29,6 +26,6 @@ return new class extends Migration
    */
   public function down(): void
   {
-    Schema::dropIfExists('client_request_logs');
+    Schema::dropIfExists('client_analytics');
   }
 };

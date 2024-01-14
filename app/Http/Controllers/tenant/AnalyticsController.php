@@ -5,9 +5,12 @@ namespace App\Http\Controllers\tenant;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Stevebauman\Location\Facades\Location;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 use App\Models\tenant\ClientFingerprint;
-use App\Models\tenant\ClientRequestLog;
+use App\Models\tenant\ClientAnalytic;
+use App\Models\tenant\ClientAnalyticCountry;
 
 class AnalyticsController extends Controller
 {
@@ -16,13 +19,20 @@ class AnalyticsController extends Controller
   {
     try {
 
-      $allUniqueUsers = ClientFingerprint::withCount('logs')->get();
-      $allRequests = ClientRequestLog::all();
+      $clientAnalyticQuery = ClientAnalytic::with(['fingerprints', 'countryAnalytics']);
+
+      if ($request->query('start') && $request->query('end')) {
+        $clientAnalyticQuery->where('date', '>=', $request->query('start'));
+        $clientAnalyticQuery->where('date', '<=', $request->query('end'));
+      }
+
+      $clientAnalytic = $clientAnalyticQuery->orderBy('date', 'asc')->get();
 
       return response([
         'message' => 'Client analytics report.',
-        'unique_users' => $allUniqueUsers,
-        'all_requests' => $allRequests,
+        'client_analytic' => $clientAnalytic,
+        'test1' => $request->query('start'),
+        'test2' => $request->query('end'),
       ], 200);
     } catch (Exception $e) {
       return response([
@@ -35,29 +45,51 @@ class AnalyticsController extends Controller
   {
     try {
 
-      $existingFingerprints = ClientFingerprint::where('fingerprint', $request->fingerprint)->count();
-
-      if ($existingFingerprints == 0) {
-        ClientFingerprint::create([
-          'fingerprint' => $request->fingerprint
-        ]);
-      }
-
+      // Create fingerprint if not exists
       $requestIp = '0.0.0.0';
       if ($request->ip) {
         $requestIp = $request->ip;
       }
 
-      ClientRequestLog::create([
+      $clientFingerprintRecord = ClientFingerprint::firstOrCreate([
         'fingerprint' => $request->fingerprint,
+      ], [
         'ip' => $requestIp,
         'user_agent' => $request->userAgent(),
-        'url' => $request->fullUrl(),
-        'country_code' => Location::get($request->ip)->countryCode
+        'country_code' => Location::get($request->ip)->countryCode,
+        'request_count' => 0
       ]);
+      $clientFingerprintRecord->save();
+
+      $clientFingerprintRecord->increment('request_count');
+
+      // Alter analytic
+      $clientAnalyticRecord = ClientAnalytic::firstOrCreate([
+        'date' => Carbon::now(),
+      ], [
+        'request_count' => 0
+      ]);
+      $clientAnalyticRecord->save();
+
+      $clientAnalyticRecord->increment('request_count');
+
+      $clientAnalyticRecord->fingerprints()->syncWithoutDetaching($clientFingerprintRecord);
+      $clientAnalyticRecord->fingerprints()->where('fingerprint_id', $clientFingerprintRecord->id)->increment('request_count');
+
+      // Alter analytic country
+      $clientAnalyticCountryRecord = ClientAnalyticCountry::firstOrCreate([
+        'client_analytic_id' => $clientAnalyticRecord->id,
+        'country_code' => $clientFingerprintRecord->country_code,
+      ], [
+        'request_count' => 0
+      ]);
+      $clientAnalyticCountryRecord->save();
+
+      $clientAnalyticCountryRecord->increment('request_count');
 
       return response([
-        'message' => 'Request successful.'
+        'message' => 'Request successful.',
+        'test' => $clientAnalyticRecord->id
       ], 200);
     } catch (Exception $e) {
       return response([

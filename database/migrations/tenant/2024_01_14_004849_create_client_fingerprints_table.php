@@ -14,6 +14,10 @@ return new class extends Migration
     Schema::create('client_fingerprints', function (Blueprint $table) {
       $table->id();
       $table->string('fingerprint')->unique();
+      $table->string('ip');
+      $table->text('user_agent');
+      $table->string('country_code', 2);
+      $table->integer('request_count')->default(0);
       $table->timestamps();
 
       $table->index(['fingerprint']);
