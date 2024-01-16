@@ -118,9 +118,15 @@ class CreateNewTenant extends Command
         'datatype' => "longText"
       ]);
 
-      $tenantRequestLoggingSetting = Setting::create([
-        'key' => "request_logging",
-        'value' => true
+      $tenantRequestLoggingSetting = Setting::insert([
+        [
+          'key' => "request_logging",
+          'value' => false
+        ],
+        [
+          'key' => "client_request_logging",
+          'value' => false
+        ],
       ]);
     });
 

@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\DB;
 use App\Models\tenant\ClientFingerprint;
 use App\Models\tenant\ClientAnalytic;
 use App\Models\tenant\ClientAnalyticCountry;
+use App\Models\tenant\Setting;
 
 class AnalyticsController extends Controller
 {
@@ -44,6 +45,13 @@ class AnalyticsController extends Controller
   public function client_request(Request $request)
   {
     try {
+
+      $logClientRequestSetting = Setting::where('key', 'client_request_logging')->first();
+      if (!$logClientRequestSetting) {
+        return response([
+          'message' => 'Request successful. Not Logged.'
+        ], 200);
+      }
 
       // Create fingerprint if not exists
       $requestIp = '0.0.0.0';
