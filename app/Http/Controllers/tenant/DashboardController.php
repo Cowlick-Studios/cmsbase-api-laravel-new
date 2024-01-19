@@ -68,7 +68,7 @@ class DashboardController extends Controller
       ], 200);
     } catch (Exception $e) {
       return response([
-        'message' => 'Server error.'
+        'message' => $e->getMessage()
       ], 500);
     }
   }

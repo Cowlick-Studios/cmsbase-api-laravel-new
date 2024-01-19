@@ -15,11 +15,12 @@ use App\Mail\EmailSubmission as EmailSubmissionMailer;
 
 class EmailSubmissionController extends Controller
 {
-  public function index (Request $request){
+  public function index(Request $request)
+  {
     try {
 
       $query = EmailSubmission::query();
-      $query->with(['recipients', 'fields', 'fields.type']);      
+      $query->with(['recipients', 'fields', 'fields.type']);
       $emailSubmissions = $query->get();
 
       return response([
@@ -28,15 +29,16 @@ class EmailSubmissionController extends Controller
       ], 200);
     } catch (Exception $e) {
       return response([
-        'message' => 'Server error.'
+        'message' => $e->getMessage()
       ], 500);
     }
   }
 
-  public function store (Request $request){
+  public function store(Request $request)
+  {
     $request->validate([
-			'name' => ['required']
-		]);
+      'name' => ['required']
+    ]);
 
     try {
       $newEmailSubmission = EmailSubmission::create([
@@ -51,19 +53,20 @@ class EmailSubmissionController extends Controller
       ], 200);
     } catch (Exception $e) {
       return response([
-        'message' => 'Server error.'
+        'message' => $e->getMessage()
       ], 500);
     }
   }
 
-  public function update (Request $request, EmailSubmission $emailSubmission){
+  public function update(Request $request, EmailSubmission $emailSubmission)
+  {
 
     // $request->validate([
     //   'public_create' => ['boolean'],
     //   'public_read' => ['boolean'],
     //   'public_update' => ['boolean'],
     //   'public_delete' => ['boolean'],
-		// ]);
+    // ]);
 
     try {
 
@@ -75,12 +78,13 @@ class EmailSubmissionController extends Controller
       ], 200);
     } catch (Exception $e) {
       return response([
-        'message' => 'Server error.'
+        'message' => $e->getMessage()
       ], 500);
     }
   }
 
-  public function destroy (Request $request, EmailSubmission $emailSubmission){
+  public function destroy(Request $request, EmailSubmission $emailSubmission)
+  {
     try {
 
       $emailSubmission->delete();
@@ -90,16 +94,17 @@ class EmailSubmissionController extends Controller
       ], 200);
     } catch (Exception $e) {
       return response([
-        'message' => 'Server error.'
+        'message' => $e->getMessage()
       ], 500);
     }
   }
 
-  public function addField (Request $request, EmailSubmission $emailSubmission){
+  public function addField(Request $request, EmailSubmission $emailSubmission)
+  {
     $request->validate([
-			'name' => ['required'],
+      'name' => ['required'],
       'type_id' => ['required'],
-		]);
+    ]);
 
     try {
 
@@ -122,12 +127,13 @@ class EmailSubmissionController extends Controller
       ], 200);
     } catch (Exception $e) {
       return response([
-        'message' => 'Server error.'
+        'message' => $e->getMessage()
       ], 500);
     }
   }
 
-  public function removeField (Request $request, EmailSubmission $emailSubmission, EmailSubmissionField $field){
+  public function removeField(Request $request, EmailSubmission $emailSubmission, EmailSubmissionField $field)
+  {
     try {
 
       $emailSubmission = $emailSubmission->load(['fields', 'fields.type']);
@@ -138,15 +144,16 @@ class EmailSubmissionController extends Controller
       ], 200);
     } catch (Exception $e) {
       return response([
-        'message' => 'Server error.'
+        'message' => $e->getMessage()
       ], 500);
     }
   }
 
-  public function addRecipient (Request $request, EmailSubmission $emailSubmission){
+  public function addRecipient(Request $request, EmailSubmission $emailSubmission)
+  {
     $request->validate([
-			'user_id' => ['required'],
-		]);
+      'user_id' => ['required'],
+    ]);
 
     try {
 
@@ -159,12 +166,13 @@ class EmailSubmissionController extends Controller
       ], 200);
     } catch (Exception $e) {
       return response([
-        'message' => 'Server error.'
+        'message' => $e->getMessage()
       ], 500);
     }
   }
 
-  public function removeRecipient (Request $request, EmailSubmission $emailSubmission, User $user){
+  public function removeRecipient(Request $request, EmailSubmission $emailSubmission, User $user)
+  {
     try {
 
       $emailSubmission = $emailSubmission->load(['fields', 'fields.type', 'recipients']);
@@ -176,15 +184,16 @@ class EmailSubmissionController extends Controller
       ], 200);
     } catch (Exception $e) {
       return response([
-        'message' => 'Server error.'
+        'message' => $e->getMessage()
       ], 500);
     }
   }
 
-  public function syncRecipient (Request $request, EmailSubmission $emailSubmission){
+  public function syncRecipient(Request $request, EmailSubmission $emailSubmission)
+  {
     // $request->validate([
-		// 	'user_ids' => ['required', 'nullable'],
-		// ]);
+    // 	'user_ids' => ['required', 'nullable'],
+    // ]);
 
     try {
 
@@ -193,7 +202,7 @@ class EmailSubmissionController extends Controller
       if ($request->has('user_ids')) {
         $emailSubmission->recipients()->sync($request->user_ids);
       }
-      
+
       return response([
         'message' => 'Email submission recipient synced.',
         'email_submission' => $emailSubmission,
@@ -201,12 +210,13 @@ class EmailSubmissionController extends Controller
       ], 200);
     } catch (Exception $e) {
       return response([
-        'message' => 'Server error.'
+        'message' => $e->getMessage()
       ], 500);
     }
   }
 
-  public function submit (Request $request, $emailSubmissionName){
+  public function submit(Request $request, $emailSubmissionName)
+  {
     try {
 
       $emailSubmission = EmailSubmission::with(['fields', 'fields.type', 'recipients'])->where('name', $emailSubmissionName)->first();
@@ -218,17 +228,17 @@ class EmailSubmissionController extends Controller
       }
 
       foreach ($emailSubmission->recipients as $recipient) {
-        if(!$recipient->blocked && $recipient->email_verified_at && !$recipient->public){ // Verify user is admin, verified and not blocked
+        if (!$recipient->blocked && $recipient->email_verified_at && !$recipient->public) { // Verify user is admin, verified and not blocked
           Mail::to($recipient)->send(new EmailSubmissionMailer($emailSubmission, $formSubmissionObj));
         }
       }
-      
+
       return response([
         'message' => 'Email submission sent.'
       ], 200);
     } catch (Exception $e) {
       return response([
-        'message' => 'Server error.'
+        'message' => $e->getMessage()
       ], 500);
     }
   }

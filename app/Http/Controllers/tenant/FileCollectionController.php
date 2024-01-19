@@ -14,7 +14,8 @@ class FileCollectionController extends Controller
 
   use RequestHelperTrait;
 
-  public function index(Request $request){
+  public function index(Request $request)
+  {
     try {
 
       $collections = FileCollection::all();
@@ -25,12 +26,13 @@ class FileCollectionController extends Controller
       ], 200);
     } catch (Exception $e) {
       return response([
-        'message' => 'Server error.'
+        'message' => $e->getMessage()
       ], 500);
     }
   }
 
-  public function show(Request $request, Collection $collection){
+  public function show(Request $request, Collection $collection)
+  {
     try {
 
       $collection = $collection->load(['files']);
@@ -41,12 +43,13 @@ class FileCollectionController extends Controller
       ], 200);
     } catch (Exception $e) {
       return response([
-        'message' => 'Server error.'
+        'message' => $e->getMessage()
       ], 500);
     }
   }
 
-  public function create(Request $request){
+  public function create(Request $request)
+  {
     try {
 
       $newCollection = FileCollection::create([
@@ -59,51 +62,55 @@ class FileCollectionController extends Controller
       ], 200);
     } catch (Exception $e) {
       return response([
-        'message' => 'Server error.'
+        'message' => $e->getMessage()
       ], 500);
     }
   }
 
-  public function update(Request $request, Collection $collection){
+  public function update(Request $request, Collection $collection)
+  {
     try {
       return response([
         'message' => 'Collection updated.',
       ], 200);
     } catch (Exception $e) {
       return response([
-        'message' => 'Server error.'
+        'message' => $e->getMessage()
       ], 500);
     }
   }
-  
-  public function destroy(Request $request, Collection $collection){
+
+  public function destroy(Request $request, Collection $collection)
+  {
     try {
       return response([
         'message' => 'Collection removed.',
       ], 200);
     } catch (Exception $e) {
       return response([
-        'message' => 'Server error.'
+        'message' => $e->getMessage()
       ], 500);
     }
   }
 
-  public function addFiles(Request $request, Collection $collection){
+  public function addFiles(Request $request, Collection $collection)
+  {
     try {
 
       $collection->files()->syncWithoutDetaching($request["files"]);
-      
+
       return response([
         'message' => 'Add file to collection.'
       ], 200);
     } catch (Exception $e) {
       return response([
-        'message' => 'Server error.'
+        'message' => $e->getMessage()
       ], 500);
     }
   }
 
-  public function removeFile(Request $request, Collection $collection, File $file){
+  public function removeFile(Request $request, Collection $collection, File $file)
+  {
     try {
 
       $collection->files()->detach($file->id);
@@ -113,7 +120,7 @@ class FileCollectionController extends Controller
       ], 200);
     } catch (Exception $e) {
       return response([
-        'message' => 'Server error.'
+        'message' => $e->getMessage()
       ], 500);
     }
   }

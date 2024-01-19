@@ -37,17 +37,17 @@ class AuthenticateTokenTenant
         $decoded = JWT::decode($jwt, new Key($jwtPublicKey, 'EdDSA')); // key is required in SODIUM_BASE64_VARIANT_ORIGINAL
       } catch (SignatureInvalidException $e) {
         return response([
-          'message' => 'Server Error.',
+          'message' => $e->getMessage(),
           'error' => $e->getMessage()
         ], 401);
       } catch (BeforeValidException $e) {
         return response([
-          'message' => 'Server Error.',
+          'message' => $e->getMessage(),
           'error' => $e->getMessage()
         ], 401);
       } catch (ExpiredException $e) {
         return response([
-          'message' => 'Server Error.',
+          'message' => $e->getMessage(),
           'error' => $e->getMessage()
         ], 401);
       }
@@ -95,7 +95,7 @@ class AuthenticateTokenTenant
       return $next($request);
     } catch (Exception $e) {
       return response([
-        'message' => 'Server Error.',
+        'message' => $e->getMessage(),
       ], 500);
     }
   }

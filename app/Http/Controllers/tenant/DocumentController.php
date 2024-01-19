@@ -21,12 +21,13 @@ use App\Models\tenant\User;
 class DocumentController extends Controller
 {
 
-  public function index (Request $request, $collectionName){
+  public function index(Request $request, $collectionName)
+  {
     try {
 
       $collection = Collection::with(['fields', 'fields.type'])->where('name', $collectionName)->first();
 
-      if(!$collection->public_read && (!$request->requesting_user || $request->requesting_user->public)){
+      if (!$collection->public_read && (!$request->requesting_user || $request->requesting_user->public)) {
         return response([
           'message' => 'Public users cannot perform read operations on this collection.',
         ], 401);
@@ -43,17 +44,18 @@ class DocumentController extends Controller
       ], 200);
     } catch (Exception $e) {
       return response([
-        'message' => 'Server error.'
+        'message' => $e->getMessage()
       ], 500);
     }
   }
 
-  public function show (Request $request, $collectionName, $documentId){
+  public function show(Request $request, $collectionName, $documentId)
+  {
     try {
 
       $collection = Collection::with(['fields', 'fields.type'])->where('name', $collectionName)->first();
 
-      if(!$collection->public_read && (!$request->requesting_user || $request->requesting_user->public)){
+      if (!$collection->public_read && (!$request->requesting_user || $request->requesting_user->public)) {
         return response([
           'message' => 'Public users cannot perform read operations on this collection.',
         ], 401);
@@ -69,17 +71,18 @@ class DocumentController extends Controller
       ], 200);
     } catch (Exception $e) {
       return response([
-        'message' => 'Server error.'
+        'message' => $e->getMessage()
       ], 500);
     }
   }
 
-  public function store (Request $request, $collectionName){
+  public function store(Request $request, $collectionName)
+  {
     try {
 
       $collection = Collection::with(['fields', 'fields.type'])->where('name', $collectionName)->first();
 
-      if(!$collection->public_write && $request->requesting_user->public){
+      if (!$collection->public_write && $request->requesting_user->public) {
         return response([
           'message' => 'Public users cannot perform write operations on this collection.',
         ], 401);
@@ -104,12 +107,13 @@ class DocumentController extends Controller
       ], 200);
     } catch (Exception $e) {
       return response([
-        'message' => 'Server error.'
+        'message' => $e->getMessage()
       ], 500);
     }
   }
 
-  public function update (Request $request, $collectionName, $documentId){
+  public function update(Request $request, $collectionName, $documentId)
+  {
     try {
 
       $collection = Collection::with(['fields', 'fields.type'])->where('name', $collectionName)->first();
@@ -117,13 +121,13 @@ class DocumentController extends Controller
       $tableName = "collection-{$collection->name}";
       $document = DB::table($tableName)->where('id', $documentId)->first();
 
-      if(!$collection->public_update && $request->requesting_user->public){
+      if (!$collection->public_update && $request->requesting_user->public) {
         return response([
           'message' => 'Public users cannot perform update operations on this collection.',
         ], 401);
       }
 
-      if(!$request->requesting_user->public || ($request->requesting_user->public && $request->requesting_user->id == $document->user_id)){
+      if (!$request->requesting_user->public || ($request->requesting_user->public && $request->requesting_user->id == $document->user_id)) {
         $updatedDocument = $request->all();
         $updatedDocument["updated_at"] = now();
 
@@ -132,7 +136,7 @@ class DocumentController extends Controller
         unset($updatedDocument['created_at']);
         unset($updatedDocument['requesting_user']);
 
-        
+
         DB::table($tableName)->where('id', $documentId)->update($updatedDocument);
         $updated = DB::table($tableName)->where('id', $documentId)->first();
       } else {
@@ -147,12 +151,13 @@ class DocumentController extends Controller
       ], 200);
     } catch (Exception $e) {
       return response([
-        'message' => 'Server error.'
+        'message' => $e->getMessage()
       ], 500);
     }
   }
 
-  public function destroy (Request $request, $collectionName, $documentId){
+  public function destroy(Request $request, $collectionName, $documentId)
+  {
     try {
 
       $collection = Collection::with(['fields', 'fields.type'])->where('name', $collectionName)->first();
@@ -160,13 +165,13 @@ class DocumentController extends Controller
       $tableName = "collection-{$collection->name}";
       $document = DB::table($tableName)->where('id', $documentId)->first();
 
-      if(!$collection->public_delete && $request->requesting_user->public){
+      if (!$collection->public_delete && $request->requesting_user->public) {
         return response([
           'message' => 'Public users cannot perform delete operations on this collection.',
         ], 401);
       }
 
-      if(!$request->requesting_user->public || ($request->requesting_user->public && $request->requesting_user->id == $document->user_id)){
+      if (!$request->requesting_user->public || ($request->requesting_user->public && $request->requesting_user->id == $document->user_id)) {
         $tableName = "collection-{$collection->name}";
         $deleted = DB::table($tableName)->where('id', $documentId)->delete();
       } else {
@@ -180,7 +185,7 @@ class DocumentController extends Controller
       ], 200);
     } catch (Exception $e) {
       return response([
-        'message' => 'Server error.'
+        'message' => $e->getMessage()
       ], 500);
     }
   }

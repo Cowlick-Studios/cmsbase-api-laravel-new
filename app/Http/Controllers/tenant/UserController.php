@@ -16,7 +16,8 @@ use App\Mail\AuthRegisterConfirmationCode;
 class UserController extends Controller
 {
 
-  private function getRandomString($length = 20){
+  private function getRandomString($length = 20)
+  {
     $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
     $randomString = '';
     for ($i = 0; $i < $length; $i++) {
@@ -26,7 +27,8 @@ class UserController extends Controller
     return $randomString;
   }
 
-  private function generateVerificationCode($length = 6){
+  private function generateVerificationCode($length = 6)
+  {
     $characters = '0123456789';
     $randomString = '';
     for ($i = 0; $i < $length; $i++) {
@@ -36,14 +38,15 @@ class UserController extends Controller
     return $randomString;
   }
 
-  public function index(Request $request){
+  public function index(Request $request)
+  {
     try {
 
       $query = User::query();
-      
+
       $query->orderBy('created_at', 'desc');
 
-      if($request->has('public')){
+      if ($request->has('public')) {
         $query->where('public', $request->query('public'));
       }
 
@@ -55,12 +58,13 @@ class UserController extends Controller
       ], 200);
     } catch (Exception $e) {
       return response([
-        'message' => 'Server error.'
+        'message' => $e->getMessage()
       ], 500);
     }
   }
 
-  public function show(Request $request, User $user){
+  public function show(Request $request, User $user)
+  {
     try {
       return response([
         'message' => 'User record.',
@@ -68,19 +72,20 @@ class UserController extends Controller
       ], 200);
     } catch (Exception $e) {
       return response([
-        'message' => 'Server error.'
+        'message' => $e->getMessage()
       ], 500);
     }
   }
 
-  public function create(Request $request){
+  public function create(Request $request)
+  {
 
     $request->validate([
-			'name' => ['required'],
+      'name' => ['required'],
       'email' => ['required'],
       'password' => ['required'],
       'public' => ['required', 'boolean']
-		]);
+    ]);
 
     try {
 
@@ -108,36 +113,37 @@ class UserController extends Controller
       ], 200);
     } catch (QueryException $e) {
 
-      if($e->getCode() == 23505){
+      if ($e->getCode() == 23505) {
         return response([
           'message' => 'A file with this name already exists.'
         ], 409);
       }
 
       return response([
-        'message' => 'Server error.'
+        'message' => $e->getMessage()
       ], 500);
     }
   }
 
-  public function update(Request $request, User $user){
+  public function update(Request $request, User $user)
+  {
 
     $request->validate([
-			'public' => ['boolean'],
+      'public' => ['boolean'],
       'blocked' => ['boolean'],
-		]);
+    ]);
 
     try {
 
-      if($request->has('name')){
+      if ($request->has('name')) {
         $user->name = $request->name;
       }
 
-      if($request->has('public')){
+      if ($request->has('public')) {
         $user->public = $request->public;
       }
 
-      if($request->has('blocked')){
+      if ($request->has('blocked')) {
         $user->blocked = $request->blocked;
       }
 
@@ -149,12 +155,13 @@ class UserController extends Controller
       ], 200);
     } catch (Exception $e) {
       return response([
-        'message' => 'Server error.'
+        'message' => $e->getMessage()
       ], 500);
     }
   }
 
-  public function destroy(Request $request, User $user){
+  public function destroy(Request $request, User $user)
+  {
     try {
 
       $user->delete();
@@ -164,22 +171,23 @@ class UserController extends Controller
       ], 200);
     } catch (Exception $e) {
       return response([
-        'message' => 'Server error.'
+        'message' => $e->getMessage()
       ], 500);
     }
   }
 
-  public function verifyEmail(Request $request, User $user){
+  public function verifyEmail(Request $request, User $user)
+  {
 
     $request->validate([
-			'code' => ['required'],
-		]);
+      'code' => ['required'],
+    ]);
 
     try {
 
       $emailVerification = EmailVerification::where('user_id', $user->id)->first();
 
-      if($request->code !== $emailVerification->code){
+      if ($request->code !== $emailVerification->code) {
 
         $emailVerification->code = $this->getRandomString(rand(20, 30));
         $emailVerification->save();
@@ -200,7 +208,7 @@ class UserController extends Controller
       ], 200);
     } catch (Exception $e) {
       return response([
-        'message' => 'Server error.'
+        'message' => $e->getMessage()
       ], 500);
     }
   }

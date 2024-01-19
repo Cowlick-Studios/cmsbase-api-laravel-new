@@ -21,16 +21,17 @@ use App\Models\tenant\User;
 class CollectionController extends Controller
 {
 
-  public function index (Request $request){
+  public function index(Request $request)
+  {
     try {
 
       $query = Collection::query();
       $query->with(['fields', 'fields.type']);
 
-      if(!$request->requesting_user || $request->requesting_user->public){
+      if (!$request->requesting_user || $request->requesting_user->public) {
         $query->where('public_read', true);
       }
-      
+
       $collections = $query->get();
 
       return response([
@@ -39,16 +40,17 @@ class CollectionController extends Controller
       ], 200);
     } catch (Exception $e) {
       return response([
-        'message' => 'Server error.'
+        'message' => $e->getMessage()
       ], 500);
     }
   }
 
-  public function show (Request $request, $collectionName){
+  public function show(Request $request, $collectionName)
+  {
     try {
       $collection = Collection::with(['fields', 'fields.type'])->where('name', $collectionName)->first();
 
-      if(!$collection->public_read && (!$request->requesting_user || $request->requesting_user->public)){
+      if (!$collection->public_read && (!$request->requesting_user || $request->requesting_user->public)) {
         return response([
           'message' => 'Collection not available to public users.',
         ], 401);
@@ -60,19 +62,20 @@ class CollectionController extends Controller
       ], 200);
     } catch (Exception $e) {
       return response([
-        'message' => 'Server error.'
+        'message' => $e->getMessage()
       ], 500);
     }
   }
 
-  public function store (Request $request){
+  public function store(Request $request)
+  {
     $request->validate([
-			'name' => ['required'],
+      'name' => ['required'],
       'public_create' => ['required', 'boolean'],
       'public_read' => ['required', 'boolean'],
       'public_update' => ['required', 'boolean'],
       'public_delete' => ['required', 'boolean'],
-		]);
+    ]);
 
     try {
       $newCollection = Collection::create([
@@ -100,19 +103,20 @@ class CollectionController extends Controller
       ], 200);
     } catch (Exception $e) {
       return response([
-        'message' => 'Server error.'
+        'message' => $e->getMessage()
       ], 500);
     }
   }
 
-  public function update (Request $request, Collection $collection){
+  public function update(Request $request, Collection $collection)
+  {
 
     $request->validate([
       'public_create' => ['boolean'],
       'public_read' => ['boolean'],
       'public_update' => ['boolean'],
       'public_delete' => ['boolean'],
-		]);
+    ]);
 
     try {
 
@@ -124,16 +128,17 @@ class CollectionController extends Controller
       ], 200);
     } catch (Exception $e) {
       return response([
-        'message' => 'Server error.'
+        'message' => $e->getMessage()
       ], 500);
     }
   }
 
-  public function addField (Request $request, Collection $collection){
+  public function addField(Request $request, Collection $collection)
+  {
     $request->validate([
-			'name' => ['required'],
+      'name' => ['required'],
       'type_id' => ['required'],
-		]);
+    ]);
 
     try {
 
@@ -151,7 +156,7 @@ class CollectionController extends Controller
 
       $tableName = "collection-{$collection->name}";
       Schema::table($tableName, function (Blueprint $table) use ($newCollectionField) {
-        switch ($newCollectionField->type->datatype){
+        switch ($newCollectionField->type->datatype) {
           case "tinyInteger":
             $table->tinyInteger($newCollectionField->name)->nullable();
             break;
@@ -236,12 +241,13 @@ class CollectionController extends Controller
       ], 200);
     } catch (Exception $e) {
       return response([
-        'message' => 'Server error.'
+        'message' => $e->getMessage()
       ], 500);
     }
   }
 
-  public function removeField (Request $request, Collection $collection, CollectionField $field){
+  public function removeField(Request $request, Collection $collection, CollectionField $field)
+  {
     try {
 
       $collection = $collection->load(['fields', 'fields.type']);
@@ -257,12 +263,13 @@ class CollectionController extends Controller
       ], 200);
     } catch (Exception $e) {
       return response([
-        'message' => 'Server error.'
+        'message' => $e->getMessage()
       ], 500);
     }
   }
 
-  public function destroy (Request $request, Collection $collection){
+  public function destroy(Request $request, Collection $collection)
+  {
     try {
 
       $tableName = "collection-{$collection->name}";
@@ -275,14 +282,15 @@ class CollectionController extends Controller
       ], 200);
     } catch (Exception $e) {
       return response([
-        'message' => 'Server error.'
+        'message' => $e->getMessage()
       ], 500);
     }
   }
 
   // Field types
   // TODO: Move to own controller
-  public function getFieldTypes(Request $request){
+  public function getFieldTypes(Request $request)
+  {
     try {
 
       $query = CollectionFieldType::query();
@@ -294,17 +302,18 @@ class CollectionController extends Controller
       ], 200);
     } catch (Exception $e) {
       return response([
-        'message' => 'Server error.'
+        'message' => $e->getMessage()
       ], 500);
     }
   }
 
-  public function createFieldType(Request $request){
+  public function createFieldType(Request $request)
+  {
 
     $request->validate([
-			'name' => ['required'],
+      'name' => ['required'],
       'datatype' => ['required'],
-		]);
+    ]);
 
     try {
       $newCollectionFieldType = CollectionFieldType::create([
@@ -318,7 +327,7 @@ class CollectionController extends Controller
       ], 200);
     } catch (Exception $e) {
       return response([
-        'message' => 'Server error.'
+        'message' => $e->getMessage()
       ], 500);
     }
   }

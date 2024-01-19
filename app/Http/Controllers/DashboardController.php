@@ -13,20 +13,22 @@ use Symfony\Component\Finder\Finder;
 
 class DashboardController extends Controller
 {
-  private function getTotalSizeOfFilesInDirectory($directoryPath){
+  private function getTotalSizeOfFilesInDirectory($directoryPath)
+  {
     $finder = new Finder();
     $finder->files()->in($directoryPath);
 
     $totalSize = 0;
 
     foreach ($finder as $file) {
-        $totalSize += File::size($file->getRealPath());
+      $totalSize += File::size($file->getRealPath());
     }
 
     return $totalSize;
   }
 
-  public function index(Request $request){
+  public function index(Request $request)
+  {
     try {
       $totalDiskSpace = disk_total_space('/');
       $freeDiskSpace = disk_free_space('/');
@@ -38,7 +40,7 @@ class DashboardController extends Controller
       ], 200);
     } catch (Exception $e) {
       return response([
-        'message' => 'Server error.'
+        'message' => $e->getMessage()
       ], 500);
     }
   }

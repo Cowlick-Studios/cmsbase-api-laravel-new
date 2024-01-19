@@ -47,7 +47,7 @@ class TenantController extends Controller
       ], 200);
     } catch (Exception $e) {
       return response([
-        'message' => 'Server error.'
+        'message' => $e->getMessage()
       ], 500);
     }
   }
@@ -61,7 +61,7 @@ class TenantController extends Controller
       ], 200);
     } catch (Exception $e) {
       return response([
-        'message' => 'Server error.'
+        'message' => $e->getMessage()
       ], 500);
     }
   }
@@ -151,7 +151,7 @@ class TenantController extends Controller
       }
 
       return response([
-        'message' => 'Server error.',
+        'message' => $e->getMessage(),
         'error' => $e
       ], 500);
     }
@@ -181,7 +181,7 @@ class TenantController extends Controller
       ], 200);
     } catch (Exception $e) {
       return response([
-        'message' => 'Server error.'
+        'message' => $e->getMessage()
       ], 500);
     }
   }
@@ -198,7 +198,7 @@ class TenantController extends Controller
       ], 200);
     } catch (Exception $e) {
       return response([
-        'message' => 'Server error.'
+        'message' => $e->getMessage()
       ], 500);
     }
   }

@@ -25,24 +25,25 @@ use App\Models\UserEmailChange;
 
 class AuthController extends Controller
 {
-  public function login(Request $request){
+  public function login(Request $request)
+  {
     $request->validate([
-			'email' => 'required',
-			'password' => 'required'
-		]);
+      'email' => 'required',
+      'password' => 'required'
+    ]);
 
     try {
 
       Log::notice('Login attempt: ' . $request->email);
       $user = User::where('email', $request->email)->first();
 
-      if(!$user){
+      if (!$user) {
         return response([
           'message' => 'We could not find a matching user.'
         ], 404);
       }
 
-      if(!Hash::check($request->password, $user->password)){
+      if (!Hash::check($request->password, $user->password)) {
         return response([
           'message' => 'Credentials are invalid.'
         ], 404);
@@ -53,7 +54,7 @@ class AuthController extends Controller
       $currentTenant = tenant();
       $currentTenantName = null;
 
-      if($currentTenant){
+      if ($currentTenant) {
         $currentTenantName = $currentTenant->id;
       }
 
@@ -78,23 +79,24 @@ class AuthController extends Controller
       ], 200);
     } catch (Exception $e) {
       return response([
-        'message' => 'Server error.'
+        'message' => $e->getMessage()
       ], 500);
     }
   }
 
-  public function registerConfirm(Request $request){
+  public function registerConfirm(Request $request)
+  {
     $request->validate([
-			'email' => 'required',
-			'verification_code' => 'required'
-		]);
+      'email' => 'required',
+      'verification_code' => 'required'
+    ]);
 
     try {
       $emailVerification = UserRegister::where('email', $request->email)->first();
 
       $user = User::where('email', $request->email)->first();
 
-      if($request->verification_code == $emailVerification->verification_code){
+      if ($request->verification_code == $emailVerification->verification_code) {
         $user->email_verified_at = now();
         $user->save();
 
@@ -118,15 +120,16 @@ class AuthController extends Controller
       ], 200);
     } catch (Exception $e) {
       return response([
-        'message' => 'Server error.'
+        'message' => $e->getMessage()
       ], 500);
     }
   }
 
-  public function passwordReset(Request $request){
+  public function passwordReset(Request $request)
+  {
     $request->validate([
-			'email' => 'required'
-		]);
+      'email' => 'required'
+    ]);
 
     try {
 
@@ -145,17 +148,18 @@ class AuthController extends Controller
       ], 200);
     } catch (Exception $e) {
       return response([
-        'message' => 'Server error.'
+        'message' => $e->getMessage()
       ], 500);
     }
   }
 
-  public function passwordResetConfirm(Request $request){
+  public function passwordResetConfirm(Request $request)
+  {
     $request->validate([
-			'email' => 'required',
-			'verification_code' => 'required',
+      'email' => 'required',
+      'verification_code' => 'required',
       'new_password' => 'required'
-		]);
+    ]);
 
     try {
 
@@ -163,7 +167,7 @@ class AuthController extends Controller
 
       $user = User::where('email', $request->email)->first();
 
-      if($request->verification_code == $passwordReset->verification_code){
+      if ($request->verification_code == $passwordReset->verification_code) {
 
         $user->password = $passwordReset->new_password;
         $user->save();
@@ -186,16 +190,17 @@ class AuthController extends Controller
       ], 200);
     } catch (Exception $e) {
       return response([
-        'message' => 'Server error.'
+        'message' => $e->getMessage()
       ], 500);
     }
   }
 
-  public function emailChange(Request $request){
+  public function emailChange(Request $request)
+  {
     $request->validate([
-			'email' => 'required',
-			'new_email' => 'required'
-		]);
+      'email' => 'required',
+      'new_email' => 'required'
+    ]);
 
     try {
 
@@ -213,16 +218,17 @@ class AuthController extends Controller
       ], 200);
     } catch (Exception $e) {
       return response([
-        'message' => 'Server error.'
+        'message' => $e->getMessage()
       ], 500);
     }
   }
 
-  public function emailChangeConfirmOld(Request $request){
+  public function emailChangeConfirmOld(Request $request)
+  {
     $request->validate([
-			'email' => 'required',
-			'verification_code' => 'required'
-		]);
+      'email' => 'required',
+      'verification_code' => 'required'
+    ]);
 
     try {
 
@@ -230,7 +236,7 @@ class AuthController extends Controller
 
       $user = User::where('email', $request->email)->first();
 
-      if($request->verification_code == $emailChange->verification_code_old){
+      if ($request->verification_code == $emailChange->verification_code_old) {
         $emailChange->verification_code_new = $this->generateVerificationCode();
         $emailChange->save();
 
@@ -251,23 +257,24 @@ class AuthController extends Controller
       ], 200);
     } catch (Exception $e) {
       return response([
-        'message' => 'Server error.'
+        'message' => $e->getMessage()
       ], 500);
     }
   }
 
-  public function emailChangeConfirmNew(Request $request){
+  public function emailChangeConfirmNew(Request $request)
+  {
     $request->validate([
-			'new_email' => 'required',
-			'verification_code' => 'required'
-		]);
+      'new_email' => 'required',
+      'verification_code' => 'required'
+    ]);
 
     try {
 
       $emailChange = UserEmailChange::where('new_email', $request->new_email)->first();
       $user = User::where('email', $emailChange->email)->first();
 
-      if($request->verification_code == $emailChange->verification_code_new){
+      if ($request->verification_code == $emailChange->verification_code_new) {
         $user->email = $emailChange->new_email;
         $user->save();
 
@@ -289,7 +296,7 @@ class AuthController extends Controller
       ], 200);
     } catch (Exception $e) {
       return response([
-        'message' => 'Server error.'
+        'message' => $e->getMessage()
       ], 500);
     }
   }

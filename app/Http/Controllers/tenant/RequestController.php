@@ -10,7 +10,8 @@ use App\Models\tenant\RequestLog;
 
 class RequestController extends Controller
 {
-  public function index(Request $request){
+  public function index(Request $request)
+  {
     try {
 
       $requests = RequestLog::with(['user'])->orderBy('created_at', 'desc')->get();
@@ -23,12 +24,13 @@ class RequestController extends Controller
       ], 200);
     } catch (Exception $e) {
       return response([
-        'message' => 'Server error.'
+        'message' => $e->getMessage()
       ], 500);
     }
   }
 
-  public function clear(Request $request){
+  public function clear(Request $request)
+  {
     try {
 
       RequestLog::truncate();
@@ -38,7 +40,7 @@ class RequestController extends Controller
       ], 200);
     } catch (Exception $e) {
       return response([
-        'message' => 'Server error.'
+        'message' => $e->getMessage()
       ], 500);
     }
   }

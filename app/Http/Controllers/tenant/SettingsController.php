@@ -9,7 +9,8 @@ use App\Models\tenant\Setting;
 
 class SettingsController extends Controller
 {
-  public function index(Request $request){
+  public function index(Request $request)
+  {
     try {
 
       $settings = Setting::all();
@@ -20,16 +21,17 @@ class SettingsController extends Controller
       ], 200);
     } catch (Exception $e) {
       return response([
-        'message' => 'Server error.'
+        'message' => $e->getMessage()
       ], 500);
     }
   }
 
-  public function update(Request $request, $requestKey){
+  public function update(Request $request, $requestKey)
+  {
 
     $request->validate([
-			'value' => ['required'],
-		]);
+      'value' => ['required'],
+    ]);
 
     try {
 
@@ -45,7 +47,7 @@ class SettingsController extends Controller
       ], 200);
     } catch (Exception $e) {
       return response([
-        'message' => 'Server error.'
+        'message' => $e->getMessage()
       ], 500);
     }
   }

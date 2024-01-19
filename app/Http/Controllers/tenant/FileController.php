@@ -18,36 +18,37 @@ class FileController extends Controller
 
   use RequestHelperTrait;
 
-  public function index(Request $request){
+  public function index(Request $request)
+  {
     try {
-      
+
       $query = File::query();
 
-      if($request->query('name')){
+      if ($request->query('name')) {
         $query->where('name', 'LIKE', "%{$request->query('name')}%");
       }
 
-      if($request->query('alternative_text')){
+      if ($request->query('alternative_text')) {
         $query->where('alternative_text', 'LIKE', "%{$request->query('alternative_text')}%");
       }
 
-      if($request->query('caption')){
+      if ($request->query('caption')) {
         $query->where('caption', 'LIKE', "%{$request->query('caption')}%");
       }
 
-      if($request->query('extension')){
+      if ($request->query('extension')) {
         $query->where('extension', $request->query('extension'));
       }
 
-      if($request->query('mime_type')){
+      if ($request->query('mime_type')) {
         $query->where('mime_type', $request->query('mime_type'));
       }
 
-      if($request->query('collection')){
+      if ($request->query('collection')) {
         $query->where('collection', Str::of($request->query('collection')->slug()));
       }
 
-      if($request->query('page') && $request->query('quantity')){
+      if ($request->query('page') && $request->query('quantity')) {
         $query = $this->paginate($query, $request->query('page'), $request->query('quantity'));
       }
 
@@ -59,18 +60,19 @@ class FileController extends Controller
       ], 200);
     } catch (Exception $e) {
       return response([
-        'message' => 'Server error.'
+        'message' => $e->getMessage()
       ], 500);
     }
   }
 
   // Upload file to system
-  public function upload(Request $request){
+  public function upload(Request $request)
+  {
 
     $request->validate([
-			'file' => ['required'], // 'mimetypes:jpeg,jpg,png,svg,mp4,mov,avi,pdf'
+      'file' => ['required'], // 'mimetypes:jpeg,jpg,png,svg,mp4,mov,avi,pdf'
       'use_name' => ['boolean'],
-		]);
+    ]);
 
     try {
 
@@ -86,9 +88,9 @@ class FileController extends Controller
 
       $storagePath = null;
 
-      if($request->use_name){
+      if ($request->use_name) {
         $existingFileRecord = File::where('name', Str::of(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME))->slug())->where('extension', $file->extension())->first();
-        if($existingFileRecord){
+        if ($existingFileRecord) {
           return response([
             'message' => 'A file with this name already exists.'
           ], 409);
@@ -117,11 +119,11 @@ class FileController extends Controller
       $newFile->height = $height;
       $newFile->size = $file->getSize();
 
-      if($request->has('alternative_text')){
+      if ($request->has('alternative_text')) {
         $newFile->alternative_text = $request->alternative_text;
       }
 
-      if($request->has('caption')){
+      if ($request->has('caption')) {
         $newFile->caption = $request->caption;
       }
 
@@ -130,7 +132,7 @@ class FileController extends Controller
       $filePath = "{$filename}.{$extension}";
       $urlPath = "/file/{$filePath}";
 
-      if($request->has('collection')){
+      if ($request->has('collection')) {
         $newFile->collection = Str::of($request->collection)->slug();
         $urlPath = "/file/{$request->collection}/{$filePath}";
       }
@@ -140,21 +142,21 @@ class FileController extends Controller
         "original" => $file->getClientOriginalName(),
         "uri" => $urlPath
       ], 200);
-      
     } catch (QueryException $e) {
       return response([
-        'message' => 'Server error.',
+        'message' => $e->getMessage(),
         'error' => $e
       ], 500);
     }
   }
 
   // Upload file to system
-  public function uploadBulk(Request $request){
+  public function uploadBulk(Request $request)
+  {
 
     $request->validate([
-			'use_name' => ['boolean'],
-		]);
+      'use_name' => ['boolean'],
+    ]);
 
     $files = $request->file('files');
 
@@ -166,9 +168,9 @@ class FileController extends Controller
 
         $storagePath = null;
 
-        if($request->use_name){
+        if ($request->use_name) {
           $existingFileRecord = File::where('name', Str::of(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME))->slug())->where('extension', $file->extension())->first();
-          if($existingFileRecord){
+          if ($existingFileRecord) {
             array_push($failedUploads, [
               "original" => $file->getClientOriginalName(),
               "error" => "A file with this name already exists."
@@ -187,9 +189,9 @@ class FileController extends Controller
         [$width, $height] = getimagesize($file);
         $filename = $explodeStoragePath[0];
         $extension = $explodeStoragePath[1];
-  
+
         $newFile = new File;
-  
+
         $newFile->disk = "public";
         $newFile->name = $filename;
         $newFile->extension = $extension;
@@ -198,21 +200,21 @@ class FileController extends Controller
         $newFile->width = $width;
         $newFile->height = $height;
         $newFile->size = $file->getSize();
-  
-        if($request->has('alternative_text')){
+
+        if ($request->has('alternative_text')) {
           $newFile->alternative_text = $request->alternative_text;
         }
-  
-        if($request->has('caption')){
+
+        if ($request->has('caption')) {
           $newFile->caption = $request->caption;
         }
-  
+
         $newFile->save();
-  
+
         $filePath = "{$filename}.{$extension}";
         $urlPath = "/file/{$filePath}";
-  
-        if($request->has('collection')){
+
+        if ($request->has('collection')) {
           $newFile->collection = Str::of($request->collection)->slug();
           $urlPath = "/file/{$request->collection}/{$filePath}";
         }
@@ -221,12 +223,11 @@ class FileController extends Controller
           "original" => $file->getClientOriginalName(),
           "uri" => $urlPath
         ]);
-        
       } catch (QueryException $e) {
         array_push($failedUploads, [
           "original" => $file->getClientOriginalName(),
           "error" => "UNKNOWN"
-        ]);  
+        ]);
       }
     }
 
@@ -238,14 +239,15 @@ class FileController extends Controller
   }
 
   // Update
-  public function update(Request $request, File $file){
+  public function update(Request $request, File $file)
+  {
     try {
-      if($request->has('name')){
+      if ($request->has('name')) {
         $slugFileName = Str::of(pathinfo($request->name, PATHINFO_FILENAME))->slug();
         $slugFilePath = Str::of(pathinfo($request->name, PATHINFO_FILENAME))->slug() . "." . $file->extension;
 
         $existingFileRecord = File::where('path', $slugFilePath)->first();
-        if(!$existingFileRecord){
+        if (!$existingFileRecord) {
           return response([
             'message' => 'A file with this name already exists.'
           ], 409);
@@ -257,15 +259,15 @@ class FileController extends Controller
         $file->path = $slugFilePath;
       }
 
-      if($request->has('alternative_text')){
+      if ($request->has('alternative_text')) {
         $file->alternative_text = $request->alternative_text;
       }
 
-      if($request->has('caption')){
+      if ($request->has('caption')) {
         $file->caption = $request->caption;
       }
 
-      if($request->has('collection')){
+      if ($request->has('collection')) {
         $file->collection = Str::of($request->collection)->slug();
       }
 
@@ -277,22 +279,23 @@ class FileController extends Controller
       ], 200);
     } catch (QueryException $e) {
 
-      if($e->getCode() == 23505){
+      if ($e->getCode() == 23505) {
         return response([
           'message' => 'A file with this name already exists.'
         ], 409);
       }
 
       return response([
-        'message' => 'Server error.'
+        'message' => $e->getMessage()
       ], 500);
     }
   }
 
   // Delete file from system
-  public function destroy(Request $request, File $file){
+  public function destroy(Request $request, File $file)
+  {
     try {
-      if($file){
+      if ($file) {
         Storage::disk('public')->delete($file->path);
         $file->delete();
 
@@ -306,14 +309,15 @@ class FileController extends Controller
       }
     } catch (Exception $e) {
       return response([
-        'message' => 'Server error.'
+        'message' => $e->getMessage()
       ], 500);
     }
   }
 
   // Get file from system
-  public function retrieveFile(Request $request, $fileName){
-    if(Storage::disk('public')->exists($fileName)){
+  public function retrieveFile(Request $request, $fileName)
+  {
+    if (Storage::disk('public')->exists($fileName)) {
       return response()->file(storage_path("app/public/{$fileName}"));
     } else {
       return response([
