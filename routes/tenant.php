@@ -28,6 +28,7 @@ use App\Http\Controllers\tenant\CollectionController;
 use App\Http\Controllers\tenant\DocumentController;
 use App\Http\Controllers\tenant\EmailSubmissionController;
 use App\Http\Controllers\tenant\AnalyticsController;
+use App\Http\Controllers\tenant\PageController;
 
 /*
 |--------------------------------------------------------------------------
@@ -109,6 +110,17 @@ Route::middleware([
     Route::middleware([AuthenticateTokenTenant::class, LogRequestResponse::class])->patch('/{collectionName}/document/{documentId}', [DocumentController::class, 'update']);
     Route::middleware([AuthenticateTokenTenant::class, LogRequestResponse::class])->put('/{collectionName}/document/{documentId}', [DocumentController::class, 'update']);
     Route::middleware([AuthenticateTokenTenant::class, LogRequestResponse::class])->delete('/{collectionName}/document/{documentId}', [DocumentController::class, 'destroy']);
+  });
+
+  Route::prefix('page')->group(function () {
+    Route::middleware([AuthenticateTokenTenantOptional::class, LogRequestResponse::class])->get('/', [PageController::class, 'index']);
+    Route::middleware([AuthenticateTokenTenantOptional::class, LogRequestResponse::class])->get('/{pageName}', [PageController::class, 'show']);
+    Route::middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class, LogRequestResponse::class])->post('/', [PageController::class, 'store']);
+    Route::middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class, LogRequestResponse::class])->patch('/{page}', [PageController::class, 'update']);
+    Route::middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class, LogRequestResponse::class])->put('/{page}', [PageController::class, 'update']);
+    Route::middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class, LogRequestResponse::class])->delete('/{page}', [PageController::class, 'destroy']);
+    Route::middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class, LogRequestResponse::class])->post('/{page}/field', [PageController::class, 'addField']);
+    Route::middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class, LogRequestResponse::class])->delete('/{page}/field/{field}', [PageController::class, 'removeField']);
   });
 
   Route::prefix('collection_field_type')->middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class, LogRequestResponse::class])->group(function () {
