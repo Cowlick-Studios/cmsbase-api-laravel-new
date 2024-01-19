@@ -25,6 +25,7 @@ use App\Models\tenant\UserPasswordReset;
 use App\Models\tenant\UserEmailChange;
 use App\Models\tenant\Collection;
 use App\Models\tenant\CollectionFieldType;
+use App\Models\tenant\Page;
 
 class AuthController extends Controller
 {
@@ -106,6 +107,7 @@ class AuthController extends Controller
 
       // System Config Info
       $appConfig = [
+        'pages' => Page::all(),
         'collections' => Collection::with(['fields', 'fields.type'])->get(),
         'collection_field_types' => CollectionFieldType::all()
       ];
