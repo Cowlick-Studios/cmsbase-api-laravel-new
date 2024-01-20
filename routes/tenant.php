@@ -29,6 +29,7 @@ use App\Http\Controllers\tenant\DocumentController;
 use App\Http\Controllers\tenant\EmailSubmissionController;
 use App\Http\Controllers\tenant\AnalyticsController;
 use App\Http\Controllers\tenant\PageController;
+use App\Http\Controllers\tenant\ItemController;
 
 /*
 |--------------------------------------------------------------------------
@@ -121,6 +122,15 @@ Route::middleware([
     Route::middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class, LogRequestResponse::class])->delete('/{page}', [PageController::class, 'destroy']);
     Route::middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class, LogRequestResponse::class])->post('/{page}/field', [PageController::class, 'addField']);
     Route::middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class, LogRequestResponse::class])->delete('/{page}/field/{field}', [PageController::class, 'removeField']);
+  });
+
+  Route::prefix('item')->group(function () {
+    Route::middleware([AuthenticateTokenTenantOptional::class, LogRequestResponse::class])->get('/', [ItemController::class, 'index']);
+    Route::middleware([AuthenticateTokenTenantOptional::class, LogRequestResponse::class])->get('/{itemName}', [ItemController::class, 'show']);
+    Route::middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class, LogRequestResponse::class])->post('/', [ItemController::class, 'store']);
+    Route::middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class, LogRequestResponse::class])->patch('/{item}', [ItemController::class, 'update']);
+    Route::middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class, LogRequestResponse::class])->put('/{item}', [ItemController::class, 'update']);
+    Route::middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class, LogRequestResponse::class])->delete('/{item}', [ItemController::class, 'destroy']);
   });
 
   Route::prefix('collection_field_type')->middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class, LogRequestResponse::class])->group(function () {
