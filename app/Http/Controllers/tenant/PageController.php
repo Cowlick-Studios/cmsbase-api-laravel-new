@@ -86,7 +86,8 @@ class PageController extends Controller
 
     $request->validate([
       'name' => ['string'],
-      'data' => ['array']
+      'data' => ['array'],
+      'published' => ['boolean']
     ]);
 
     try {
@@ -95,6 +96,10 @@ class PageController extends Controller
 
       if ($request->has('name')) {
         $page->name = $request->name;
+      }
+
+      if ($request->has('published')) {
+        $page->published = $request->published;
       }
 
       if ($request->has('data')) {
