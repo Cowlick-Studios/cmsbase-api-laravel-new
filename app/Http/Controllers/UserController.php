@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\VerifyEmail;
 use Carbon\Carbon;
+use Exception;
 
 // Mail
 use App\Mail\AuthRegisterConfirmationCode;

@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Stevebauman\Location\Facades\Location;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Exception;
 
 use App\Models\tenant\ClientFingerprint;
 use App\Models\tenant\ClientAnalytic;

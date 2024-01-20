@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Storage;
+use Exception;
 
 use App\Models\User;
 use App\Models\Tenant;

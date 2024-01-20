@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Hash;
 use Firebase\JWT\JWT;
 use Illuminate\Support\Facades\Mail;
 use App\Http\Controllers\Controller;
+use Exception;
 
 // Mail
 use App\Mail\AuthRegisterConfirmationCode;

@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\File as FileValidation;
 use Illuminate\Database\QueryException;
+use Exception;
 
 // Models
 use App\Traits\RequestHelperTrait;

@@ -10,6 +10,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Symfony\Component\Finder\Finder;
+use Exception;
 
 class DashboardController extends Controller
 {

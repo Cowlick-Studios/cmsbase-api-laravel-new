@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Mail;
 use App\Mail\VerifyEmail;
 use Carbon\Carbon;
 use App\Http\Controllers\Controller;
+use Exception;
 
 use App\Models\tenant\User;
 use App\Models\tenant\UserRegister;

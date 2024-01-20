@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\File;
 use Symfony\Component\Finder\Finder;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
+use Exception;
 
 use App\Models\tenant\Collection;
 use App\Models\tenant\CollectionFieldType;

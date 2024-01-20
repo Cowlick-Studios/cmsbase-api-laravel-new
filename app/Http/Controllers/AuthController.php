@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Hash;
 use Firebase\JWT\JWT;
 use Illuminate\Support\Facades\Mail;
+use Exception;
 
 // Mail
 use App\Mail\AuthRegisterConfirmationCode;
