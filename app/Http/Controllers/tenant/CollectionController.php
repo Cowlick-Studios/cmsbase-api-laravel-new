@@ -133,6 +133,25 @@ class CollectionController extends Controller
     }
   }
 
+  public function destroy(Request $request, Collection $collection)
+  {
+    try {
+
+      $tableName = "collection-{$collection->name}";
+      Schema::dropIfExists($tableName);
+
+      $collection->delete();
+
+      return response([
+        'message' => 'Collection removed.'
+      ], 200);
+    } catch (Exception $e) {
+      return response([
+        'message' => $e->getMessage()
+      ], 500);
+    }
+  }
+
   public function addField(Request $request, Collection $collection)
   {
     $request->validate([
@@ -260,25 +279,6 @@ class CollectionController extends Controller
 
       return response([
         'message' => 'Collection field removed.'
-      ], 200);
-    } catch (Exception $e) {
-      return response([
-        'message' => $e->getMessage()
-      ], 500);
-    }
-  }
-
-  public function destroy(Request $request, Collection $collection)
-  {
-    try {
-
-      $tableName = "collection-{$collection->name}";
-      Schema::dropIfExists($tableName);
-
-      $collection->delete();
-
-      return response([
-        'message' => 'Collection removed.'
       ], 200);
     } catch (Exception $e) {
       return response([

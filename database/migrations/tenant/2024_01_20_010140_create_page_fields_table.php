@@ -11,13 +11,14 @@ return new class extends Migration
    */
   public function up(): void
   {
-    Schema::create('pages', function (Blueprint $table) {
+    Schema::create('page_fields', function (Blueprint $table) {
       $table->id();
-      $table->string('name')->unique();
-      $table->text('data')->nullable();
+      $table->foreignId('page_id')->references('id')->on('pages')->onDelete('cascade');
+      $table->foreignId('type_id')->references('id')->on('collection_field_types')->onDelete('cascade');
+      $table->string('name');
       $table->timestamps();
 
-      $table->index(['name']);
+      $table->index(['name', 'page_id', 'type_id']);
     });
   }
 
@@ -26,6 +27,6 @@ return new class extends Migration
    */
   public function down(): void
   {
-    Schema::dropIfExists('pages');
+    Schema::dropIfExists('page_fields');
   }
 };

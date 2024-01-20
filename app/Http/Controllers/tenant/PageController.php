@@ -9,6 +9,7 @@ use Carbon\Carbon;
 
 use App\Models\tenant\Page;
 use App\Models\tenant\CollectionFieldType;
+use App\Models\tenant\PageField;
 
 class PageController extends Controller
 {
@@ -17,6 +18,7 @@ class PageController extends Controller
     try {
 
       $query = Page::query();
+      $query->with(['fields', 'fields.type']);
       $pages = $query->get();
 
       return response([
@@ -34,6 +36,7 @@ class PageController extends Controller
   {
     try {
       $query = Page::query();
+      $query->with(['fields', 'fields.type']);
       $page = $query->where('name', $pageName)->first();
 
       return response([
@@ -56,9 +59,10 @@ class PageController extends Controller
     try {
       $newPage = Page::create([
         'name' => $request->name,
-        'schema' => [],
         'data' => []
       ]);
+
+      $newPage->load(['fields', 'fields.type']);
 
       return response([
         'message' => 'New page created.',
@@ -76,9 +80,12 @@ class PageController extends Controller
 
     $request->validate([
       'name' => ['string'],
+      'data' => ['array']
     ]);
 
     try {
+
+      $page = $page->load(['fields', 'fields.type']);
 
       if ($request->has('name')) {
         $page->name = $request->name;
@@ -86,95 +93,98 @@ class PageController extends Controller
 
       if ($request->has('data')) {
 
-        $data = $page->data;
+        $tempDataObject = $page->data;
 
-        foreach ($page->schema as $fieldName => $fieldInfo) {
-          if (array_key_exists($fieldName, $request->data)) {
-            switch ($fieldInfo["type"]) {
+        foreach ($page->fields as $field) {
+          if (array_key_exists($field->name, $request->data)) {
+
+            $tempDataObject[$field->name] = $request->data[$field->name];
+
+            switch ($field->type->name) {
               case "tinyInteger":
-                $data[$fieldName] = (string)$request->data[$fieldName];
+                $tempDataObject[$field->name] = (string)$request->data[$field->name];
                 break;
               case "unsignedTinyInteger":
-                $data[$fieldName] = (int)$request->data[$fieldName];
+                $tempDataObject[$field->name] = (int)$request->data[$field->name];
                 break;
               case "smallInteger":
-                $data[$fieldName] = (int)$request->data[$fieldName];
+                $tempDataObject[$field->name] = (int)$request->data[$field->name];
                 break;
               case "unsignedSmallInteger":
-                $data[$fieldName] = (int)$request->data[$fieldName];
+                $tempDataObject[$field->name] = (int)$request->data[$field->name];
                 break;
               case "integer":
-                $data[$fieldName] = (int)$request->data[$fieldName];
+                $tempDataObject[$field->name] = (int)$request->data[$field->name];
                 break;
               case "unsignedInteger":
-                $data[$fieldName] = (int)$request->data[$fieldName];
+                $tempDataObject[$field->name] = (int)$request->data[$field->name];
                 break;
               case "mediumInteger":
-                $data[$fieldName] = (int)$request->data[$fieldName];
+                $tempDataObject[$field->name] = (int)$request->data[$field->name];
                 break;
               case "unsignedMediumInteger":
-                $data[$fieldName] = (int)$request->data[$fieldName];
+                $tempDataObject[$field->name] = (int)$request->data[$field->name];
                 break;
               case "bigInteger":
-                $data[$fieldName] = (int)$request->data[$fieldName];
+                $tempDataObject[$field->name] = (int)$request->data[$field->name];
                 break;
               case "unsignedBigInteger":
-                $data[$fieldName] = (int)$request->data[$fieldName];
+                $tempDataObject[$field->name] = (int)$request->data[$field->name];
                 break;
               case "decimal":
-                $data[$fieldName] = (float)$request->data[$fieldName];
+                $tempDataObject[$field->name] = (float)$request->data[$field->name];
                 break;
               case "unsignedDecimal":
-                $data[$fieldName] = (float)$request->data[$fieldName];
+                $tempDataObject[$field->name] = (float)$request->data[$field->name];
                 break;
               case "float":
-                $data[$fieldName] = (float)$request->data[$fieldName];
+                $tempDataObject[$field->name] = (float)$request->data[$field->name];
                 break;
               case "double":
-                $data[$fieldName] = (float)$request->data[$fieldName];
+                $tempDataObject[$field->name] = (float)$request->data[$field->name];
                 break;
               case "char":
-                $data[$fieldName] = (string)$request->data[$fieldName];
+                $tempDataObject[$field->name] = (string)$request->data[$field->name];
                 break;
               case "string":
-                $data[$fieldName] = (string)$request->data[$fieldName];
+                $tempDataObject[$field->name] = (string)$request->data[$field->name];
                 break;
               case "tinyText":
-                $data[$fieldName] = (string)$request->data[$fieldName];
+                $tempDataObject[$field->name] = (string)$request->data[$field->name];
                 break;
               case "text":
-                $data[$fieldName] = (string)$request->data[$fieldName];
+                $tempDataObject[$field->name] = (string)$request->data[$field->name];
                 break;
               case "mediumText":
-                $data[$fieldName] = (string)$request->data[$fieldName];
+                $tempDataObject[$field->name] = (string)$request->data[$field->name];
                 break;
               case "longText":
-                $data[$fieldName] = (string)$request->data[$fieldName];
+                $tempDataObject[$field->name] = (string)$request->data[$field->name];
                 break;
               case "boolean":
-                $data[$fieldName] = (bool)$request->data[$fieldName];
+                $tempDataObject[$field->name] = (bool)$request->data[$field->name];
                 break;
               case "date":
-                $carbonDate = Carbon::parse($request->data[$fieldName]);
-                $data[$fieldName] = (string)$carbonDate->toDateString();
+                $carbonDate = Carbon::parse($request->data[$field->name]);
+                $tempDataObject[$field->name] = (string)$carbonDate->toDateString();
                 break;
               case "time":
-                $carbonDate = Carbon::parse($request->data[$fieldName]);
-                $data[$fieldName] = (string)$carbonDate->toTimeString();
+                $carbonDate = Carbon::parse($request->data[$field->name]);
+                $tempDataObject[$field->name] = (string)$carbonDate->toTimeString();
                 break;
               case "dateTime":
-                $carbonDate = Carbon::parse($request->data[$fieldName]);
-                $data[$fieldName] = (string)$carbonDate->toDateTimeString();
+                $carbonDate = Carbon::parse($request->data[$field->name]);
+                $tempDataObject[$field->name] = (string)$carbonDate->toDateTimeString();
                 break;
               case "timestamp":
-                $carbonDate = Carbon::parse($request->data[$fieldName]);
-                $data[$fieldName] = (string)$carbonDate->getTimestamp();
+                $carbonDate = Carbon::parse($request->data[$field->name]);
+                $tempDataObject[$field->name] = (string)$carbonDate->getTimestamp();
                 break;
             }
           }
         }
 
-        $page->data = $data;
+        $page->data = $tempDataObject;
       }
 
       $page->save();
@@ -215,28 +225,34 @@ class PageController extends Controller
 
     try {
 
-      $collectionFieldType = CollectionFieldType::where('id', $request->type_id)->first();
+      $existingField = PageField::where('page_id', $page->id)->where('name', $request->name)->first();
 
-      if (array_key_exists($request->name, $page->schema) && array_key_exists($request->name, $page->data)) {
-        throw new Exception('Field already exists on schema or data.');
+      if ($existingField) {
+        return response([
+          'message' => 'Page field already exists.',
+        ], 409);
       }
 
-      $schema = $page->schema;
-      $schema[$request->name] = [
-        'type' => $collectionFieldType->name,
-        'type_id' => $collectionFieldType->id
-      ];
-      $page->schema = $schema;
+      $page = $page->load(['fields', 'fields.type']);
 
-      $data = $page->data;
-      $data[$request->name] = null;
-      $page->data = $data;
+      $pageFieldType = CollectionFieldType::where('id', $request->type_id)->first();
 
+      $newPageField = PageField::create([
+        'name' => $request->name,
+        'page_id' => $page->id,
+        'type_id' => $pageFieldType->id
+      ]);
+
+      $newPageField->load(['type']);
+
+      $tempPageData = $page->data;
+      $tempPageData[$request->name] = null;
+      $page->data = $tempPageData;
       $page->save();
 
       return response([
         'message' => 'Page field added.',
-        'page' => $page
+        'field' => $newPageField->load(['type'])
       ], 200);
     } catch (Exception $e) {
       return response([
@@ -245,27 +261,20 @@ class PageController extends Controller
     }
   }
 
-  public function removeField(Request $request, Page $page)
+  public function removeField(Request $request, Page $page, PageField $field)
   {
     try {
 
-      if (!array_key_exists($request->field, $page->schema) && !array_key_exists($request->field, $page->data)) {
-        throw new Exception('Field does not exist on schema or data.');
-      }
+      $page = $page->load(['fields', 'fields.type']);
+      $field->delete();
 
-      $schema = $page->schema;
-      unset($schema[$request->field]);
-      $page->schema = $schema;
-
-      $data = $page->data;
-      unset($data[$request->field]);
-      $page->data = $data;
-
+      $tempPageData = $page->data;
+      unset($tempPageData[$field->name]);
+      $page->data = $tempPageData;
       $page->save();
 
       return response([
         'message' => 'Page field removed.',
-        'page' => $page
       ], 200);
     } catch (Exception $e) {
       return response([
