@@ -15,7 +15,8 @@ class Item extends Model
   protected $fillable = [
     'name',
     'type_id',
-    'value'
+    'value',
+    'published'
   ];
 
   protected $casts = [

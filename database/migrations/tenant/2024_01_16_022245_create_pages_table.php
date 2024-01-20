@@ -15,6 +15,7 @@ return new class extends Migration
       $table->id();
       $table->string('name')->unique();
       $table->text('data')->nullable();
+      $table->boolean('published')->default(false);
       $table->timestamps();
 
       $table->index(['name']);

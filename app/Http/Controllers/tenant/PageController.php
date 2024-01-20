@@ -19,6 +19,9 @@ class PageController extends Controller
 
       $query = Page::query();
       $query->with(['fields', 'fields.type']);
+      if (!$request->requesting_user || $request->requesting_user->public) {
+        $query->where('published', true);
+      }
       $pages = $query->get();
 
       return response([
@@ -37,6 +40,9 @@ class PageController extends Controller
     try {
       $query = Page::query();
       $query->with(['fields', 'fields.type']);
+      if (!$request->requesting_user || $request->requesting_user->public) {
+        $query->where('published', true);
+      }
       $page = $query->where('name', $pageName)->first();
 
       return response([

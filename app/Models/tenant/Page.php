@@ -15,7 +15,8 @@ class Page extends Model
   protected $fillable = [
     'name',
     'schema',
-    'data'
+    'data',
+    'published'
   ];
 
   protected $hidden = [];

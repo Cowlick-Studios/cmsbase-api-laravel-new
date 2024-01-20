@@ -35,6 +35,11 @@ class DocumentController extends Controller
 
       $tableName = "collection-{$collection->name}";
       $query = DB::table($tableName);
+
+      if (!$request->requesting_user || $request->requesting_user->public) {
+        $query->where('published', true);
+      }
+
       $documents = $query->orderBy('updated_at', 'desc')->get();
 
       return response([
@@ -63,6 +68,11 @@ class DocumentController extends Controller
 
       $tableName = "collection-{$collection->name}";
       $query = DB::table($tableName)->where('id', $documentId);
+
+      if (!$request->requesting_user || $request->requesting_user->public) {
+        $query->where('published', true);
+      }
+
       $document = $query->orderBy('updated_at', 'desc')->first();
 
       return response([

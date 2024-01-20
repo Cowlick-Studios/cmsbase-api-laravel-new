@@ -19,6 +19,11 @@ class ItemController extends Controller
 
       $query = Item::query();
       $query->with(['type']);
+
+      if (!$request->requesting_user || $request->requesting_user->public) {
+        $query->where('published', true);
+      }
+
       $items = $query->get();
 
       return response([
@@ -39,6 +44,11 @@ class ItemController extends Controller
       $query = Item::query();
       $query->with(['type']);
       $query->where('name', $itemName);
+
+      if (!$request->requesting_user || $request->requesting_user->public) {
+        $query->where('published', true);
+      }
+
       $item = $query->first();
 
       return response([
@@ -57,7 +67,7 @@ class ItemController extends Controller
 
     $request->validate([
       'name' => ['required', 'string', Rule::unique('items')],
-      'value' => ['required', 'string'],
+      'value' => ['string'],
       'type_id' => ['required', 'integer'],
     ]);
 
@@ -173,7 +183,8 @@ class ItemController extends Controller
 
     $request->validate([
       'name' => ['string', Rule::unique('items')],
-      'value' => ['string'],
+      'value' => [],
+      'published' => ['boolean']
     ]);
 
     try {
@@ -182,6 +193,10 @@ class ItemController extends Controller
 
       if ($request->has('name')) {
         $item->name = $request->name;
+      }
+
+      if ($request->has('published')) {
+        $item->published = $request->published;
       }
 
       if ($request->has('value')) {
