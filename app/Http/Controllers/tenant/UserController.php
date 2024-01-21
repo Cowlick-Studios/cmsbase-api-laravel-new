@@ -8,6 +8,7 @@ use App\Mail\VerifyEmail;
 use Carbon\Carbon;
 use App\Http\Controllers\Controller;
 use Exception;
+use Illuminate\Validation\Rule;
 
 use App\Models\tenant\User;
 use App\Models\tenant\UserRegister;
@@ -83,7 +84,7 @@ class UserController extends Controller
 
     $request->validate([
       'name' => ['required'],
-      'email' => ['required'],
+      'email' => ['required', Rule::unique('users')],
       'password' => ['required'],
       'public' => ['required', 'boolean']
     ]);

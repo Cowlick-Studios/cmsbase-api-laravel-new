@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Exception;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 
 use App\Models\tenant\User;
 use App\Models\tenant\EmailSubmission;
@@ -39,7 +40,7 @@ class EmailSubmissionController extends Controller
   public function store(Request $request)
   {
     $request->validate([
-      'name' => ['required']
+      'name' => ['required', Rule::unique('email_submissions')]
     ]);
 
     try {
@@ -63,12 +64,9 @@ class EmailSubmissionController extends Controller
   public function update(Request $request, EmailSubmission $emailSubmission)
   {
 
-    // $request->validate([
-    //   'public_create' => ['boolean'],
-    //   'public_read' => ['boolean'],
-    //   'public_update' => ['boolean'],
-    //   'public_delete' => ['boolean'],
-    // ]);
+    $request->validate([
+      'name' => ['required', Rule::unique('email_submissions')]
+    ]);
 
     try {
 

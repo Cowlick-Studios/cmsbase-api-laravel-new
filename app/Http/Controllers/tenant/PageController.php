@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Exception;
 use Carbon\Carbon;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 
 use App\Models\tenant\Page;
 use App\Models\tenant\FieldType;
@@ -60,7 +61,7 @@ class PageController extends Controller
   public function store(Request $request)
   {
     $request->validate([
-      'name' => ['required']
+      'name' => ['required', Rule::unique('pages')]
     ]);
 
     try {
@@ -86,7 +87,7 @@ class PageController extends Controller
   {
 
     $request->validate([
-      'name' => ['string'],
+      'name' => ['string', Rule::unique('pages')],
       'data' => ['array'],
       'published' => ['boolean']
     ]);

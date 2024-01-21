@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Exception;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 
 use App\Models\tenant\Collection;
 use App\Models\tenant\FieldType;
@@ -72,7 +73,7 @@ class CollectionController extends Controller
   public function store(Request $request)
   {
     $request->validate([
-      'name' => ['required'],
+      'name' => ['required', Rule::unique('collections')],
       'public_create' => ['required', 'boolean'],
       'public_read' => ['required', 'boolean'],
       'public_update' => ['required', 'boolean'],
@@ -114,6 +115,7 @@ class CollectionController extends Controller
   {
 
     $request->validate([
+      'name' => ['string', Rule::unique('collections')],
       'public_create' => ['boolean'],
       'public_read' => ['boolean'],
       'public_update' => ['boolean'],
