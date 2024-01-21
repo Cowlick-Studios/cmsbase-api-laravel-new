@@ -9,7 +9,7 @@ use Exception;
 use App\Models\tenant\User;
 use App\Models\tenant\EmailSubmission;
 use App\Models\tenant\EmailSubmissionField;
-use App\Models\tenant\CollectionFieldType;
+use App\Models\tenant\FieldType;
 use Illuminate\Support\Facades\Mail;
 
 use App\Mail\EmailSubmission as EmailSubmissionMailer;
@@ -111,12 +111,12 @@ class EmailSubmissionController extends Controller
 
       $emailSubmission = $emailSubmission->load(['fields', 'fields.type']);
 
-      $collectionFieldType = CollectionFieldType::where('id', $request->type_id)->first();
+      $fieldType = FieldType::where('id', $request->type_id)->first();
 
       $newEmailSubmissionField = EmailSubmissionField::create([
         'name' => $request->name,
         'email_submission_id' => $emailSubmission->id,
-        'type_id' => $collectionFieldType->id
+        'type_id' => $fieldType->id
       ]);
 
       $newEmailSubmissionField->load(['type']);

@@ -15,7 +15,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Exception;
 
 use App\Models\tenant\Collection;
-use App\Models\tenant\CollectionFieldType;
+use App\Models\tenant\FieldType;
 use App\Models\tenant\CollectionField;
 use App\Models\tenant\User;
 
@@ -164,12 +164,12 @@ class CollectionController extends Controller
 
       $collection = $collection->load(['fields', 'fields.type']);
 
-      $collectionFieldType = CollectionFieldType::where('id', $request->type_id)->first();
+      $fieldType = FieldType::where('id', $request->type_id)->first();
 
       $newCollectionField = CollectionField::create([
         'name' => $request->name,
         'collection_id' => $collection->id,
-        'type_id' => $collectionFieldType->id
+        'type_id' => $fieldType->id
       ]);
 
       $newCollectionField->load(['type']);
@@ -294,7 +294,7 @@ class CollectionController extends Controller
   {
     try {
 
-      $query = CollectionFieldType::query();
+      $query = FieldType::query();
       $types = $query->get();
 
       return response([
@@ -317,14 +317,14 @@ class CollectionController extends Controller
     ]);
 
     try {
-      $newCollectionFieldType = CollectionFieldType::create([
+      $newFieldType = FieldType::create([
         'name' => $request->name,
         'datatype' => $request->datatype,
       ]);
 
       return response([
         'message' => 'New collection field type created.',
-        'type' => $newCollectionFieldType
+        'type' => $newFieldType
       ], 200);
     } catch (Exception $e) {
       return response([

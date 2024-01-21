@@ -14,7 +14,7 @@ return new class extends Migration
     Schema::create('collection_fields', function (Blueprint $table) {
       $table->id();
       $table->foreignId('collection_id')->references('id')->on('collections')->onDelete('cascade');
-      $table->foreignId('type_id')->references('id')->on('collection_field_types')->onDelete('cascade');
+      $table->foreignId('type_id')->references('id')->on('field_types')->onDelete('cascade');
       $table->string('name');
       $table->timestamps();
 

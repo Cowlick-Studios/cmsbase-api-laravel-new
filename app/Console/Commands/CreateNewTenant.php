@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Storage;
 
 use App\Models\User;
 use App\Models\Tenant;
-use App\Models\tenant\CollectionFieldType;
+use App\Models\tenant\FieldType;
 use App\Models\tenant\Setting;
 
 class CreateNewTenant extends Command
@@ -107,13 +107,13 @@ class CreateNewTenant extends Command
       ];
 
       foreach ($types as $index => $type) {
-        $collectionFieldType = CollectionFieldType::create([
+        $FieldType = FieldType::create([
           'name' => $type,
           'datatype' => $type
         ]);
       }
 
-      $collectionFieldTypeRichText = CollectionFieldType::create([
+      $FieldTypeRichText = FieldType::create([
         'name' => "richText",
         'datatype' => "longText"
       ]);

@@ -20,6 +20,6 @@ class PageField extends Model
 
   public function type(): BelongsTo
   {
-    return $this->belongsTo(CollectionFieldType::class, 'type_id', 'id');
+    return $this->belongsTo(FieldType::class, 'type_id', 'id');
   }
 }

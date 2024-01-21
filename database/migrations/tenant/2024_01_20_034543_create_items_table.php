@@ -14,7 +14,7 @@ return new class extends Migration
     Schema::create('items', function (Blueprint $table) {
       $table->id();
       $table->string('name')->unique();
-      $table->foreignId('type_id')->references('id')->on('collection_field_types')->onDelete('cascade');
+      $table->foreignId('type_id')->references('id')->on('field_types')->onDelete('cascade');
       $table->text('value')->nullable();
       $table->boolean('published')->default(false);
       $table->timestamps();

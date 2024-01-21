@@ -8,7 +8,7 @@ use Exception;
 use Carbon\Carbon;
 
 use App\Models\tenant\Page;
-use App\Models\tenant\CollectionFieldType;
+use App\Models\tenant\FieldType;
 use App\Models\tenant\PageField;
 
 class PageController extends Controller
@@ -246,7 +246,7 @@ class PageController extends Controller
 
       $page = $page->load(['fields', 'fields.type']);
 
-      $pageFieldType = CollectionFieldType::where('id', $request->type_id)->first();
+      $pageFieldType = FieldType::where('id', $request->type_id)->first();
 
       $newPageField = PageField::create([
         'name' => $request->name,

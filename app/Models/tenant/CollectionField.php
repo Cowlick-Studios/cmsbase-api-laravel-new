@@ -10,17 +10,18 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class CollectionField extends Model
 {
-    use HasFactory;
+  use HasFactory;
 
-    protected $table = 'collection_fields';
+  protected $table = 'collection_fields';
 
-		protected $fillable = [
-      'collection_id',
-      'type_id',
-      'name'
-    ];
+  protected $fillable = [
+    'collection_id',
+    'type_id',
+    'name'
+  ];
 
-    public function type(): BelongsTo{
-      return $this->belongsTo(CollectionFieldType::class, 'type_id', 'id');
-    }
+  public function type(): BelongsTo
+  {
+    return $this->belongsTo(FieldType::class, 'type_id', 'id');
+  }
 }

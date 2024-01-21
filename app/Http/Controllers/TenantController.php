@@ -10,7 +10,7 @@ use Exception;
 
 use App\Models\User;
 use App\Models\Tenant;
-use App\Models\tenant\CollectionFieldType;
+use App\Models\tenant\FieldType;
 use App\Models\tenant\Setting;
 
 class TenantController extends Controller
@@ -121,7 +121,7 @@ class TenantController extends Controller
         $types = config("cmsbase.collection_types");
 
         foreach ($types as $index => $type) {
-          $collectionFieldType = CollectionFieldType::create([
+          $fieldType = FieldType::create([
             'name' => $index,
             'datatype' => $type
           ]);

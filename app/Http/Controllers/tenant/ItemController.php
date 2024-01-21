@@ -9,7 +9,7 @@ use Exception;
 use Carbon\Carbon;
 
 use App\Models\tenant\Item;
-use App\Models\tenant\CollectionFieldType;
+use App\Models\tenant\FieldType;
 
 class ItemController extends Controller
 {
@@ -73,7 +73,7 @@ class ItemController extends Controller
 
     try {
 
-      $itemType = CollectionFieldType::where('id', $request->type_id)->first();
+      $itemType = FieldType::where('id', $request->type_id)->first();
 
       $formattedValue = null;
 

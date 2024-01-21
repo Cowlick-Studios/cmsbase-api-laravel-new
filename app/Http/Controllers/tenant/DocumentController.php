@@ -15,7 +15,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Exception;
 
 use App\Models\tenant\Collection;
-use App\Models\tenant\CollectionFieldType;
+use App\Models\tenant\FieldType;
 use App\Models\tenant\CollectionField;
 use App\Models\tenant\User;
 
