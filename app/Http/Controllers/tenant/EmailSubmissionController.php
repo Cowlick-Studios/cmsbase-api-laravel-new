@@ -5,6 +5,7 @@ namespace App\Http\Controllers\tenant;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Exception;
+use Illuminate\Support\Str;
 
 use App\Models\tenant\User;
 use App\Models\tenant\EmailSubmission;
@@ -43,7 +44,7 @@ class EmailSubmissionController extends Controller
 
     try {
       $newEmailSubmission = EmailSubmission::create([
-        'name' => $request->name
+        'name' => Str::of($request->name)->slug('_')
       ]);
 
       $newEmailSubmission->load(['fields', 'fields.type']);
@@ -71,7 +72,11 @@ class EmailSubmissionController extends Controller
 
     try {
 
-      $updatedEmailSubmission = $emailSubmission->update($request->all());
+      if ($request->has('name')) {
+        $emailSubmission->name = Str::of($request->name)->slug('_');
+      }
+
+      $emailSubmission->save();
 
       return response([
         'message' => 'Updated email submission.',

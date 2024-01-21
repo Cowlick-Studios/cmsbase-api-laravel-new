@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Exception;
 use Carbon\Carbon;
+use Illuminate\Support\Str;
 
 use App\Models\tenant\Page;
 use App\Models\tenant\FieldType;
@@ -64,7 +65,7 @@ class PageController extends Controller
 
     try {
       $newPage = Page::create([
-        'name' => $request->name,
+        'name' => Str::of($request->name)->slug('_'),
         'data' => []
       ]);
 
@@ -95,7 +96,7 @@ class PageController extends Controller
       $page = $page->load(['fields', 'fields.type']);
 
       if ($request->has('name')) {
-        $page->name = $request->name;
+        $page->name = Str::of($request->name)->slug('_');
       }
 
       if ($request->has('published')) {

@@ -13,6 +13,7 @@ use Symfony\Component\Finder\Finder;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Exception;
+use Illuminate\Support\Str;
 
 use App\Models\tenant\Collection;
 use App\Models\tenant\FieldType;
@@ -80,7 +81,7 @@ class CollectionController extends Controller
 
     try {
       $newCollection = Collection::create([
-        'name' => $request->name,
+        'name' => Str::of($request->name)->slug('_'),
         'public_create' => $request->public_create,
         'public_read' => $request->public_read,
         'public_update' => $request->public_update,

@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Exception;
 use Carbon\Carbon;
+use Illuminate\Support\Str;
 
 use App\Models\tenant\Item;
 use App\Models\tenant\FieldType;
@@ -160,7 +161,7 @@ class ItemController extends Controller
       }
 
       $newItem = Item::create([
-        'name' => $request->name,
+        'name' => Str::of($request->name)->slug('_'),
         'value' => $formattedValue,
         'type_id' => $itemType->id
       ]);
@@ -192,7 +193,7 @@ class ItemController extends Controller
       $item->load(['type']);
 
       if ($request->has('name')) {
-        $item->name = $request->name;
+        $item->name = Str::of($request->name)->slug('_');
       }
 
       if ($request->has('published')) {
