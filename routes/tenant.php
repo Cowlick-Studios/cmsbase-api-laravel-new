@@ -43,11 +43,10 @@ use App\Http\Controllers\tenant\ItemController;
 |
 */
 
-Route::middleware([
-  // InitializeTenancyByDomain::class,
-  PreventAccessFromCentralDomains::class,
-  'api'
-])->group(function () {
+Route::group([
+  'prefix' => '/tenant/{tenant}',
+  'middleware' => [InitializeTenancyByPath::class],
+], function () {
 
   Route::prefix('auth')->middleware([LogRequestResponse::class])->group(function () {
     Route::post('/login', [AuthController::class, 'login']);
