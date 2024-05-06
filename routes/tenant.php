@@ -17,11 +17,17 @@ use App\Http\Middleware\PublicUserOnlyTenant;
 use App\Http\Middleware\LogRequestResponse;
 
 // Controllers
-use App\Http\Controllers\tenant\AuthController;
-use App\Http\Controllers\tenant\DashboardController;
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\TenantController;
+use App\Http\Controllers\UserController;
+
+// Tenant Controllers
+use App\Http\Controllers\tenant\AuthController as TenantAuthController;
+use App\Http\Controllers\tenant\DashboardController as TenantDashboardController;
 use App\Http\Controllers\tenant\RequestController;
 use App\Http\Controllers\tenant\SettingsController;
-use App\Http\Controllers\tenant\UserController;
+use App\Http\Controllers\tenant\UserController as TenantUserController;
 use App\Http\Controllers\tenant\FileController;
 use App\Http\Controllers\tenant\FileCollectionController;
 use App\Http\Controllers\tenant\CollectionController;
@@ -49,21 +55,21 @@ Route::group([
 ], function () {
 
   Route::prefix('auth')->middleware([LogRequestResponse::class])->group(function () {
-    Route::post('/login', [AuthController::class, 'login']);
+    Route::post('/login', [TenantAuthController::class, 'login']);
 
-    Route::post('/register', [AuthController::class, 'register']);
-    Route::post('/register/confirm', [AuthController::class, 'registerConfirm']);
+    Route::post('/register', [TenantAuthController::class, 'register']);
+    Route::post('/register/confirm', [TenantAuthController::class, 'registerConfirm']);
 
-    Route::post('/password_reset', [AuthController::class, 'passwordReset']);
-    Route::post('/password_reset/confirm', [AuthController::class, 'passwordResetConfirm']);
+    Route::post('/password_reset', [TenantAuthController::class, 'passwordReset']);
+    Route::post('/password_reset/confirm', [TenantAuthController::class, 'passwordResetConfirm']);
 
-    Route::post('/email_change', [AuthController::class, 'emailChange']);
-    Route::post('/email_change/confirm/old', [AuthController::class, 'emailChangeConfirmOld']);
-    Route::post('/email_change/confirm/new', [AuthController::class, 'emailChangeConfirmNew']);
+    Route::post('/email_change', [TenantAuthController::class, 'emailChange']);
+    Route::post('/email_change/confirm/old', [TenantAuthController::class, 'emailChangeConfirmOld']);
+    Route::post('/email_change/confirm/new', [TenantAuthController::class, 'emailChangeConfirmNew']);
   });
 
   Route::prefix('dashboard')->middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class, LogRequestResponse::class])->group(function () {
-    Route::get('/', [DashboardController::class, 'index']);
+    Route::get('/', [TenantDashboardController::class, 'index']);
   });
 
   Route::prefix('request')->middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class, LogRequestResponse::class])->group(function () {
@@ -85,12 +91,12 @@ Route::group([
   });
 
   Route::prefix('user')->middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class, LogRequestResponse::class])->group(function () {
-    Route::get('/', [UserController::class, 'index']);
-    Route::get('/{user}', [UserController::class, 'show']);
-    Route::post('/', [UserController::class, 'create']);
-    Route::put('/{user}', [UserController::class, 'update']);
-    Route::patch('/{user}', [UserController::class, 'update']);
-    Route::delete('/{user}', [UserController::class, 'destroy']);
+    Route::get('/', [TenantUserController::class, 'index']);
+    Route::get('/{user}', [TenantUserController::class, 'show']);
+    Route::post('/', [TenantUserController::class, 'create']);
+    Route::put('/{user}', [TenantUserController::class, 'update']);
+    Route::patch('/{user}', [TenantUserController::class, 'update']);
+    Route::delete('/{user}', [TenantUserController::class, 'destroy']);
   });
 
   Route::prefix('collection')->group(function () {
@@ -173,4 +179,43 @@ Route::group([
 
     Route::middleware([LogRequestResponse::class])->post('/{emailSubmissionName}/submit', [EmailSubmissionController::class, 'submit']);
   });
+});
+
+// Admin routes
+Route::prefix('auth')->group(function () {
+  Route::post('/login', [AuthController::class, 'login']);
+
+  Route::post('/register/confirm', [AuthController::class, 'registerConfirm']);
+
+  Route::post('/password_reset', [AuthController::class, 'passwordReset']);
+  Route::post('/password_reset/confirm', [AuthController::class, 'passwordResetConfirm']);
+
+  Route::post('/email_change', [AuthController::class, 'emailChange']);
+  Route::post('/email_change/confirm/old', [AuthController::class, 'emailChangeConfirmOld']);
+  Route::post('/email_change/confirm/new', [AuthController::class, 'emailChangeConfirmNew']);
+});
+
+Route::prefix('dashboard')->middleware(AuthenticateToken::class)->group(function () {
+  Route::get('/', [DashboardController::class, 'index']);
+});
+
+Route::prefix('tenant')->middleware(AuthenticateToken::class)->group(function () {
+  Route::get('/', [TenantController::class, 'index']);
+  Route::get('/{tenant}', [TenantController::class, 'show']);
+  Route::post('/', [TenantController::class, 'create']);
+  Route::put('/{tenant}', [TenantController::class, 'update']);
+  Route::patch('/{tenant}', [TenantController::class, 'update']);
+  Route::delete('/{tenant}', [TenantController::class, 'destroy']);
+});
+
+Route::prefix('user')->middleware(AuthenticateToken::class)->group(function () {
+  Route::get('/', [UserController::class, 'index']);
+  Route::get('/{user}', [UserController::class, 'show']);
+  Route::post('/', [UserController::class, 'create']);
+  Route::put('/{user}', [UserController::class, 'update']);
+  Route::patch('/{user}', [UserController::class, 'update']);
+  Route::delete('/{user}', [UserController::class, 'destroy']);
+
+  // Forgot password
+  // Verify forgotten password
 });
