@@ -44,7 +44,7 @@ use App\Http\Controllers\tenant\ItemController;
 */
 
 Route::middleware([
-  InitializeTenancyByDomain::class,
+  // InitializeTenancyByDomain::class,
   PreventAccessFromCentralDomains::class,
   'api'
 ])->group(function () {
