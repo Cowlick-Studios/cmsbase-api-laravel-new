@@ -61,6 +61,15 @@ This is the process you can take to completely reset the system and add data for
 ./vendor/bin/sail artisan tenants:seed
 ```
 
+After total system refresh you will have an admin user as well as a single tenant:
+
+admin email: admin@example.com
+admin password: password
+
+tenant name: tenant
+tenant email: admin@tenant.com
+tenant password: password
+
 ## Easy setup
 
 This single command will scaffold the system by migrating, creating tenants as well as seeding the main system and all tenants.
