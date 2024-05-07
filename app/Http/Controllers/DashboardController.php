@@ -36,8 +36,8 @@ class DashboardController extends Controller
 
       return response([
         'message' => 'Dashboard.',
-        'total_disk_space' => $totalDiskSpace,
-        'free_disk_space' => $freeDiskSpace
+        'total_disk_space' => ceil($totalDiskSpace / 1048576),
+        'free_disk_space' => ceil($freeDiskSpace / 1048576)
       ], 200);
     } catch (Exception $e) {
       return response([

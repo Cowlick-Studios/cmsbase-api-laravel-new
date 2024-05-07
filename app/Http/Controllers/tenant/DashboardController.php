@@ -31,7 +31,7 @@ class DashboardController extends Controller
     $totalSize = 0;
 
     foreach ($finder as $file) {
-      $totalSize += File::size($file->getRealPath());
+      $totalSize += File::size($file->getRealPath()); // bytes
     }
 
     return $totalSize;
@@ -63,8 +63,8 @@ class DashboardController extends Controller
       return response([
         'message' => 'Dashboard.',
         'tenant' => tenant(),
-        'database_usage' => (int) $query[0]->schema_size,
-        'file_usage' => $this->getTotalSizeOfFilesInDirectory(storage_path()),
+        'database_usage' => ceil((int) $query[0]->schema_size / 1048576), // MB
+        'file_usage' => ceil($this->getTotalSizeOfFilesInDirectory(storage_path()) / 1048576), // MB
         'daily_request_count' => $requestCount
       ], 200);
     } catch (Exception $e) {
