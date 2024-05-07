@@ -32,7 +32,7 @@ class FileCollectionController extends Controller
     }
   }
 
-  public function show(Request $request, Collection $collection)
+  public function show(Request $request, FileCollection $collection)
   {
     try {
 
@@ -68,7 +68,7 @@ class FileCollectionController extends Controller
     }
   }
 
-  public function update(Request $request, Collection $collection)
+  public function update(Request $request, FileCollection $collection)
   {
     try {
       return response([
@@ -81,7 +81,7 @@ class FileCollectionController extends Controller
     }
   }
 
-  public function destroy(Request $request, Collection $collection)
+  public function destroy(Request $request, FileCollection $collection)
   {
     try {
       return response([
@@ -94,11 +94,11 @@ class FileCollectionController extends Controller
     }
   }
 
-  public function addFiles(Request $request, Collection $collection)
+  public function addFile(Request $request, FileCollection $collection, File $file)
   {
     try {
 
-      $collection->files()->syncWithoutDetaching($request["files"]);
+      $collection->files()->syncWithoutDetaching([$file->id]);
 
       return response([
         'message' => 'Add file to collection.'
@@ -110,7 +110,7 @@ class FileCollectionController extends Controller
     }
   }
 
-  public function removeFile(Request $request, Collection $collection, File $file)
+  public function removeFile(Request $request, FileCollection $collection, File $file)
   {
     try {
 

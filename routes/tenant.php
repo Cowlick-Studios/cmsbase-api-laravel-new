@@ -153,6 +153,10 @@ Route::group([
     Route::middleware([AuthenticateTokenTenant::class, LogRequestResponse::class])->patch('/{file}', [FileController::class, 'update']);
     Route::middleware([AuthenticateTokenTenant::class, LogRequestResponse::class])->delete('/{file}', [FileController::class, 'destroy']);
 
+    Route::middleware([AuthenticateTokenTenant::class, LogRequestResponse::class])->post('/{file}/collection', [FileController::class, 'attachCollections']);
+    Route::middleware([AuthenticateTokenTenant::class, LogRequestResponse::class])->patch('/{file}/collection', [FileController::class, 'syncCollections']);
+    Route::middleware([AuthenticateTokenTenant::class, LogRequestResponse::class])->delete('/{file}/collection', [FileController::class, 'detachCollections']);
+
     Route::middleware([LogRequestResponse::class])->get('/{fileName}', [FileController::class, 'retrieveFile']);
   });
 
@@ -164,7 +168,7 @@ Route::group([
     Route::middleware([AuthenticateTokenTenant::class, LogRequestResponse::class])->patch('/{collection}', [FileCollectionController::class, 'update']);
     Route::middleware([AuthenticateTokenTenant::class, LogRequestResponse::class])->delete('/{collection}', [FileCollectionController::class, 'destroy']);
 
-    Route::middleware([AuthenticateTokenTenant::class, LogRequestResponse::class])->post('/{collection}/file', [FileCollectionController::class, 'addFiles']);
+    Route::middleware([AuthenticateTokenTenant::class, LogRequestResponse::class])->post('/{collection}/file/{file}', [FileCollectionController::class, 'addFiles']);
     Route::middleware([AuthenticateTokenTenant::class, LogRequestResponse::class])->delete('/{collection}/file/{file}', [FileCollectionController::class, 'removeFile']);
   });
 

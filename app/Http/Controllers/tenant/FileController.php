@@ -26,6 +26,8 @@ class FileController extends Controller
 
       $query = File::query();
 
+      $query->with(['collections']);
+
       if ($request->query('name')) {
         $query->where('name', 'LIKE', "%{$request->query('name')}%");
       }
@@ -335,6 +337,55 @@ class FileController extends Controller
       return response([
         'message' => 'No matching file found.'
       ], 404);
+    }
+  }
+
+  public function syncCollections(Request $request, $file)
+  {
+    try {
+
+      $fileRecord = File::where('id', $file)->first();
+      $fileRecord->collections()->sync($request->collection_ids);
+
+      return response([
+        'message' => 'Add file to collection.',
+      ], 200);
+    } catch (Exception $e) {
+      return response([
+        'message' => $e->getMessage()
+      ], 500);
+    }
+  }
+
+  public function attachCollections(Request $request, File $file)
+  {
+    try {
+
+      $file->collections()->syncWithoutDetaching($request->collection_ids);
+
+      return response([
+        'message' => 'Add file to collection.'
+      ], 200);
+    } catch (Exception $e) {
+      return response([
+        'message' => $e->getMessage()
+      ], 500);
+    }
+  }
+
+  public function detachCollections(Request $request, File $file)
+  {
+    try {
+
+      $file->collections()->detach($request->collection_ids);
+
+      return response([
+        'message' => 'Add files to collection.',
+      ], 200);
+    } catch (Exception $e) {
+      return response([
+        'message' => $e->getMessage()
+      ], 500);
     }
   }
 }
