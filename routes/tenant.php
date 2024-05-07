@@ -83,6 +83,8 @@ Route::group([
     Route::prefix('/')->middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class, LogRequestResponse::class])->group(function () {
       Route::get('/', [AnalyticsController::class, 'index']);
     });
+
+    Route::delete('/', [AnalyticsController::class, 'clear']);
   });
 
   Route::prefix('setting')->middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class, LogRequestResponse::class])->group(function () {
