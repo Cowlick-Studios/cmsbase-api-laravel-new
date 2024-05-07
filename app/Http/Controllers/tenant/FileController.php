@@ -9,6 +9,7 @@ use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\File as FileValidation;
 use Illuminate\Database\QueryException;
 use Exception;
+use Illuminate\Database\Eloquent\Builder;
 
 // Models
 use App\Traits\RequestHelperTrait;
@@ -37,6 +38,12 @@ class FileController extends Controller
         $query->where('caption', 'LIKE', "%{$request->query('caption')}%");
       }
 
+      if ($request->query('text')) {
+        $query->orWhere('name', 'LIKE', "%{$request->query('text')}%")
+          ->orWhere('alternative_text', 'LIKE', "%{$request->query('text')}%")
+          ->orWhere('caption', 'LIKE', "%{$request->query('text')}%");
+      }
+
       if ($request->query('extension')) {
         $query->where('extension', $request->query('extension'));
       }
@@ -45,8 +52,12 @@ class FileController extends Controller
         $query->where('mime_type', $request->query('mime_type'));
       }
 
-      if ($request->query('collection')) {
-        $query->where('collection', Str::of($request->query('collection')->slug()));
+      if ($request->query('collection_id')) {
+        $collectioId = $request->query('collection_id');
+        // $query->where('collection', $request->query('collection'));
+        $query->whereHas('collections', function (Builder $query) use ($collectioId) {
+          $query->where('collection_id', $collectioId);
+        });
       }
 
       if ($request->query('page') && $request->query('quantity')) {
