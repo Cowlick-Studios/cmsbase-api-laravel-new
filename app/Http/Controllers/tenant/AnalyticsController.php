@@ -106,4 +106,22 @@ class AnalyticsController extends Controller
       ], 500);
     }
   }
+
+  public function clear(Request $request)
+  {
+    try {
+
+      ClientFingerprint::truncate();
+      ClientAnalytic::truncate();
+      ClientAnalyticCountry::truncate();
+
+      return response([
+        'message' => 'All client request data cleared.',
+      ], 200);
+    } catch (Exception $e) {
+      return response([
+        'message' => $e->getMessage()
+      ], 500);
+    }
+  }
 }
