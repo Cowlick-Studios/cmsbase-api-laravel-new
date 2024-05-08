@@ -198,9 +198,7 @@ class AuthController extends Controller
         ], 401);
       }
 
-      return response([
-        'message' => 'Registration has been confirmed.'
-      ], 200);
+      return redirect(config('app.url_spa'));
     } catch (Exception $e) {
       return response([
         'message' => $e->getMessage()
@@ -265,9 +263,7 @@ class AuthController extends Controller
         ], 401);
       }
 
-      return response([
-        'message' => 'Your password has been reset.'
-      ], 200);
+      return redirect(config('app.url_spa'));
     } catch (Exception $e) {
       return response([
         'message' => $e->getMessage()
@@ -329,9 +325,7 @@ class AuthController extends Controller
         ], 401);
       }
 
-      return response([
-        'message' => 'Current email verified.'
-      ], 200);
+      return redirect(config('app.url_spa'));
     } catch (Exception $e) {
       return response([
         'message' => $e->getMessage()
@@ -365,9 +359,8 @@ class AuthController extends Controller
           'message' => 'Verification code is incorrect, new code sent to email.'
         ], 401);
       }
-      return response([
-        'message' => 'Register.'
-      ], 200);
+      
+      return redirect(config('app.url_spa'));
     } catch (Exception $e) {
       return response([
         'message' => $e->getMessage()
