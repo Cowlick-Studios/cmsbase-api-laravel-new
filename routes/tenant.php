@@ -191,7 +191,7 @@ Route::group([
 Route::prefix('auth')->group(function () {
   Route::post('/login', [AuthController::class, 'login']);
 
-  Route::post('/register/confirm', [AuthController::class, 'registerConfirm']);
+  Route::get('/register/confirm/{email}/{confirmation_code}', [AuthController::class, 'registerConfirm']);
 
   Route::post('/password_reset', [AuthController::class, 'passwordReset']);
   Route::post('/password_reset/confirm', [AuthController::class, 'passwordResetConfirm']);

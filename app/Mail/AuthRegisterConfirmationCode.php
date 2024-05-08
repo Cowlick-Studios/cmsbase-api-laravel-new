@@ -13,12 +13,16 @@ class AuthRegisterConfirmationCode extends Mailable
 {
     use Queueable, SerializesModels;
 
+    private $verificationCode;
+    private $email;
+
     /**
      * Create a new message instance.
      */
-    public function __construct($verificationCode)
+    public function __construct($email, $verificationCode)
     {
       $this->verificationCode = $verificationCode;
+      $this->email = $email;
     }
 
     /**
@@ -40,6 +44,7 @@ class AuthRegisterConfirmationCode extends Mailable
             markdown: 'emails.auth.register.confirmation_code',
             with: [
               'verificationCode' => $this->verificationCode,
+              'actionUrl' => config('app.url') . "/admin/auth/register/confirm/{$this->email}/{$this->verificationCode}"
             ],
         );
     }

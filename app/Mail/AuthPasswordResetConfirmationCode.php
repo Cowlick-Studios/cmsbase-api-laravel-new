@@ -13,12 +13,16 @@ class AuthPasswordResetConfirmationCode extends Mailable
 {
     use Queueable, SerializesModels;
 
+    private $verificationCode;
+    private $email;
+
     /**
      * Create a new message instance.
      */
-    public function __construct($verificationCode)
+    public function __construct($email, $verificationCode)
     {
       $this->verificationCode = $verificationCode;
+      $this->email = $email;
     }
 
     /**
@@ -40,6 +44,7 @@ class AuthPasswordResetConfirmationCode extends Mailable
             markdown: 'emails.auth.password_reset.confirmation_code',
             with: [
               'verificationCode' => $this->verificationCode,
+              'actionUrl' => config('app.url') . "/admin/auth/password_reset/confirm/{$this->email}/{$this->verificationCode}"
             ],
         );
     }

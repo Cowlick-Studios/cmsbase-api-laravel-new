@@ -7,6 +7,8 @@ use Illuminate\Support\Facades\Mail;
 use App\Mail\VerifyEmail;
 use Carbon\Carbon;
 use Exception;
+use Illuminate\Database\QueryException;
+use Illuminate\Support\Facades\Hash;
 
 // Mail
 use App\Mail\AuthRegisterConfirmationCode;
@@ -76,7 +78,7 @@ class UserController extends Controller
       $user = new User;
       $user->name = $request->name;
       $user->email = $request->email;
-      $user->password = $request->password;
+      $user->password = Hash::make($request->password);
       $user->save();
 
       // Create email verification
@@ -86,7 +88,7 @@ class UserController extends Controller
       $emailVerification->save();
 
       // Send mail confirmation
-      Mail::to($user)->send(new AuthRegisterConfirmationCode($emailVerification->verification_code));
+      Mail::to($user)->send(new AuthRegisterConfirmationCode($user->email, $emailVerification->verification_code));
 
       return response([
         'message' => 'User created.',
@@ -131,47 +133,12 @@ class UserController extends Controller
   {
     try {
 
+      UserRegister::where('email', $user->email)->delete();
       $user->delete();
 
       return response([
-        'message' => 'User removed.'
-      ], 200);
-    } catch (Exception $e) {
-      return response([
-        'message' => $e->getMessage()
-      ], 500);
-    }
-  }
-
-  public function verifyEmail(Request $request, User $user)
-  {
-
-    $request->validate([
-      'code' => ['required'],
-    ]);
-
-    try {
-
-      $emailVerification = EmailVerification::where('user_id', $user->id)->first();
-
-      if ($request->code !== $emailVerification->code) {
-
-        $emailVerification->code = $this->getRandomString(rand(20, 30));
-        $emailVerification->save();
-
-        Mail::to($user)->send(new VerifyEmail('', $emailVerification->code));
-
-        return response([
-          'message' => 'Incorrect verification code.'
-        ], 401);
-      }
-
-      $now = new Carbon();
-      $user->email_verified_at = $now;
-      $user->save();
-
-      return response([
-        'message' => 'Email verified.'
+        'message' => 'User removed.',
+        'user' => $user
       ], 200);
     } catch (Exception $e) {
       return response([

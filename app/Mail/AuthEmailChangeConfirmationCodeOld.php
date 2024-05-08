@@ -13,12 +13,16 @@ class AuthEmailChangeConfirmationCodeOld extends Mailable
 {
     use Queueable, SerializesModels;
 
+    private $verificationCode;
+    private $email;
+
     /**
      * Create a new message instance.
      */
-    public function __construct($verificationCode)
+    public function __construct($email, $verificationCode)
     {
       $this->verificationCode = $verificationCode;
+      $this->email = $email;
     }
 
     /**
@@ -40,6 +44,7 @@ class AuthEmailChangeConfirmationCodeOld extends Mailable
             markdown: 'emails.auth.email_change.confirmation_code_old',
             with: [
               'verificationCode' => $this->verificationCode,
+              'actionUrl' => config('app.url') . "/admin/auth/email_change/confirm/old/{$this->email}/{$this->verificationCode}"
             ],
         );
     }
