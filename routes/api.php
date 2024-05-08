@@ -58,14 +58,14 @@ Route::group([
     Route::post('/login', [TenantAuthController::class, 'login']);
 
     Route::post('/register', [TenantAuthController::class, 'register']);
-    Route::post('/register/confirm', [TenantAuthController::class, 'registerConfirm']);
+    Route::get('/register/confirm/{email}/{verification_code}', [TenantAuthController::class, 'registerConfirm']);
 
     Route::post('/password_reset', [TenantAuthController::class, 'passwordReset']);
-    Route::post('/password_reset/confirm', [TenantAuthController::class, 'passwordResetConfirm']);
+    Route::get('/password_reset/confirm/{email}/{verification_code}', [TenantAuthController::class, 'passwordResetConfirm']);
 
     Route::post('/email_change', [TenantAuthController::class, 'emailChange']);
-    Route::post('/email_change/confirm/old', [TenantAuthController::class, 'emailChangeConfirmOld']);
-    Route::post('/email_change/confirm/new', [TenantAuthController::class, 'emailChangeConfirmNew']);
+    Route::get('/email_change/confirm/old/{email}/{verification_code}', [TenantAuthController::class, 'emailChangeConfirmOld']);
+    Route::get('/email_change/confirm/new/{email}/{verification_code}', [TenantAuthController::class, 'emailChangeConfirmNew']);
   });
 
   Route::prefix('dashboard')->middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class, LogRequestResponse::class])->group(function () {

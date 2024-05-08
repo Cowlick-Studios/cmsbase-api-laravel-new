@@ -10,6 +10,7 @@ use Firebase\JWT\JWT;
 use Illuminate\Support\Facades\Mail;
 use App\Http\Controllers\Controller;
 use Exception;
+use Illuminate\Database\QueryException;
 
 // Mail
 use App\Mail\AuthRegisterConfirmationCode;
@@ -142,7 +143,7 @@ class AuthController extends Controller
       $user = new User;
       $user->name = $request->name;
       $user->email = $request->email;
-      $user->password = bcrypt($request->password);
+      $user->password = Hash::make($request->password);
       $user->public = true;
       $user->blocked = false;
       $user->save();
@@ -154,7 +155,7 @@ class AuthController extends Controller
       $emailVerification->save();
 
       // Send mail confirmation
-      Mail::to($user)->send(new AuthRegisterConfirmationCode($emailVerification->verification_code));
+      Mail::to($user)->send(new AuthRegisterConfirmationCode($user->email, $emailVerification->code, tenant()->id));
 
       return response([
         'message' => 'Register.'
@@ -190,7 +191,7 @@ class AuthController extends Controller
         $emailVerification->verification_code = $this->generateVerificationCode();
         $emailVerification->save();
 
-        Mail::to($user)->send(new AuthRegisterConfirmationCode($emailVerification->verification_code));
+        Mail::to($user)->send(new AuthRegisterConfirmationCode($user->email, $emailVerification->code, tenant()->id));
 
         return response([
           'message' => 'Verification code is incorrect, new code sent to email.'
@@ -210,7 +211,8 @@ class AuthController extends Controller
   public function passwordReset(Request $request)
   {
     $request->validate([
-      'email' => 'required'
+      'email' => 'required',
+      'new_password' => 'required',
     ]);
 
     try {
@@ -218,11 +220,12 @@ class AuthController extends Controller
       $passwordReset = new UserPasswordReset;
       $passwordReset->email = $request->email;
       $passwordReset->verification_code = $this->generateVerificationCode();
+      $passwordReset->new_password = Hash::make($request->new_password);
       $passwordReset->save();
 
       $user = User::where('email', $request->email)->first();
 
-      Mail::to($user)->send(new AuthPasswordResetConfirmationCode($passwordReset->verification_code));
+      Mail::to($user)->send(new AuthPasswordResetConfirmationCode($request->email, $passwordReset->verification_code, tenant()->id));
 
       return response([
         'message' => 'Password reset code sent to email.'
@@ -234,23 +237,19 @@ class AuthController extends Controller
     }
   }
 
-  public function passwordResetConfirm(Request $request)
+  public function passwordResetConfirm(Request $request, $email, $verification_code)
   {
-    $request->validate([
-      'email' => 'required',
-      'verification_code' => 'required',
-      'new_password' => 'required'
-    ]);
+    $request->validate([]);
 
     try {
 
-      $passwordReset = UserPasswordReset::where('email', $request->email)->first();
+      $passwordReset = UserPasswordReset::where('email', $email)->first();
 
-      $user = User::where('email', $request->email)->first();
+      $user = User::where('email', $email)->first();
 
-      if ($request->verification_code == $passwordReset->verification_code) {
+      if ($verification_code == $passwordReset->verification_code) {
 
-        $user->password = bcrypt($request->new_password);
+        $user->password = $passwordReset->new_password;
         $user->save();
 
         Mail::to($user)->send(new AuthPasswordResetConfirmationConfirmed());
@@ -259,7 +258,7 @@ class AuthController extends Controller
         $passwordReset->verification_code = $this->generateVerificationCode();
         $passwordReset->save();
 
-        Mail::to($user)->send(new AuthPasswordResetConfirmationCode($passwordReset->verification_code));
+        Mail::to($user)->send(new AuthPasswordResetConfirmationCode($user->email, $passwordReset->verification_code, tenant()->id));
 
         return response([
           'message' => 'Verification code is incorrect, new code sent to email.'
@@ -292,7 +291,7 @@ class AuthController extends Controller
       $emailChange->verification_code_new = null;
       $emailChange->save();
 
-      Mail::to($request->email)->send(new AuthEmailChangeConfirmationCodeOld($emailChange->verification_code_old));
+      Mail::to($request->email)->send(new AuthEmailChangeConfirmationCodeOld($request->email, $emailChange->verification_code_old, tenant()->id));
 
       return response([
         'message' => 'Password reset code sent.'
@@ -304,29 +303,26 @@ class AuthController extends Controller
     }
   }
 
-  public function emailChangeConfirmOld(Request $request)
+  public function emailChangeConfirmOld(Request $request, $email, $verification_code)
   {
-    $request->validate([
-      'email' => 'required',
-      'verification_code' => 'required'
-    ]);
+    $request->validate([]);
 
     try {
 
-      $emailChange = UserEmailChange::where('email', $request->email)->first();
+      $emailChange = UserEmailChange::where('email', $email)->first();
 
       $user = User::where('email', $request->email)->first();
 
-      if ($request->verification_code == $emailChange->verification_code_old) {
+      if ($verification_code == $emailChange->verification_code_old) {
         $emailChange->verification_code_new = $this->generateVerificationCode();
         $emailChange->save();
 
-        Mail::to($emailChange->new_email)->send(new AuthEmailChangeConfirmationCodeNew($emailChange->verification_code_new));
+        Mail::to($emailChange->new_email)->send(new AuthEmailChangeConfirmationCodeNew($emailChange->new_email, $emailChange->verification_code_new, tenant()->id));
       } else {
         $emailChange->verification_code_old = $this->generateVerificationCode();
         $emailChange->save();
 
-        Mail::to($request->email)->send(new AuthEmailChangeConfirmationCodeOld($emailChange->verification_code_old));
+        Mail::to($request->email)->send(new AuthEmailChangeConfirmationCodeOld($emailChange->email, $emailChange->verification_code_old, tenant()->id));
 
         return response([
           'message' => 'Verification code is incorrect, new code sent to email.'
@@ -343,19 +339,16 @@ class AuthController extends Controller
     }
   }
 
-  public function emailChangeConfirmNew(Request $request)
+  public function emailChangeConfirmNew(Request $request, $email, $verification_code)
   {
-    $request->validate([
-      'new_email' => 'required',
-      'verification_code' => 'required'
-    ]);
+    $request->validate([]);
 
     try {
 
-      $emailChange = UserEmailChange::where('new_email', $request->new_email)->first();
+      $emailChange = UserEmailChange::where('new_email', $email)->first();
       $user = User::where('email', $emailChange->email)->first();
 
-      if ($request->verification_code == $emailChange->verification_code_new) {
+      if ($verification_code == $emailChange->verification_code_new) {
         $user->email = $emailChange->new_email;
         $user->save();
 
@@ -366,7 +359,7 @@ class AuthController extends Controller
         $emailChange->verification_code_new = $this->generateVerificationCode();
         $emailChange->save();
 
-        Mail::to($request->new_email)->send(new AuthEmailChangeConfirmationCodeNew($emailChange->verification_code_new));
+        Mail::to($request->new_email)->send(new AuthEmailChangeConfirmationCodeNew($email, $emailChange->verification_code_new, tenant()->id));
 
         return response([
           'message' => 'Verification code is incorrect, new code sent to email.'

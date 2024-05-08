@@ -9,6 +9,8 @@ use Carbon\Carbon;
 use App\Http\Controllers\Controller;
 use Exception;
 use Illuminate\Validation\Rule;
+use Illuminate\Database\QueryException;
+use Illuminate\Support\Facades\Hash;
 
 use App\Models\tenant\User;
 use App\Models\tenant\UserRegister;
@@ -81,7 +83,6 @@ class UserController extends Controller
 
   public function create(Request $request)
   {
-
     $request->validate([
       'name' => ['required'],
       'email' => ['required', Rule::unique('users')],
@@ -95,7 +96,7 @@ class UserController extends Controller
       $user = new User;
       $user->name = $request->name;
       $user->email = $request->email;
-      $user->password = bcrypt($request->password);
+      $user->password = Hash::make($request->password);
       $user->public = $request->public;
       $user->blocked = false;
       $user->save();
@@ -107,7 +108,7 @@ class UserController extends Controller
       $emailVerification->save();
 
       // Send mail confirmation
-      Mail::to($user)->send(new AuthRegisterConfirmationCode($emailVerification->code));
+      Mail::to($user)->send(new AuthRegisterConfirmationCode($user->email, $emailVerification->code, tenant()->id));
 
       return response([
         'message' => 'User created.',
@@ -170,43 +171,6 @@ class UserController extends Controller
 
       return response([
         'message' => 'User removed.'
-      ], 200);
-    } catch (Exception $e) {
-      return response([
-        'message' => $e->getMessage()
-      ], 500);
-    }
-  }
-
-  public function verifyEmail(Request $request, User $user)
-  {
-
-    $request->validate([
-      'code' => ['required'],
-    ]);
-
-    try {
-
-      $emailVerification = EmailVerification::where('user_id', $user->id)->first();
-
-      if ($request->code !== $emailVerification->code) {
-
-        $emailVerification->code = $this->getRandomString(rand(20, 30));
-        $emailVerification->save();
-
-        Mail::to($user)->send(new VerifyEmail('', $emailVerification->code));
-
-        return response([
-          'message' => 'Incorrect verification code.'
-        ], 401);
-      }
-
-      $now = new Carbon();
-      $user->email_verified_at = $now;
-      $user->save();
-
-      return response([
-        'message' => 'Email verified.'
       ], 200);
     } catch (Exception $e) {
       return response([

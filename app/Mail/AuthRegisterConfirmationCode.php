@@ -15,14 +15,23 @@ class AuthRegisterConfirmationCode extends Mailable
 
     private $verificationCode;
     private $email;
+    private $tenant;
+    private $actionUrl;
 
     /**
      * Create a new message instance.
      */
-    public function __construct($email, $verificationCode)
+    public function __construct($email, $verificationCode, $tenant = null)
     {
       $this->verificationCode = $verificationCode;
       $this->email = $email;
+      $this->tenant = $tenant;
+
+      if($tenant){
+        $this->actionUrl = config('app.url') . "/tenant/{$tenant}/auth/register/confirm/{$this->email}/{$this->verificationCode}";
+      } else {
+        $this->actionUrl = config('app.url') . "/admin/auth/register/confirm/{$this->email}/{$this->verificationCode}";
+      }
     }
 
     /**
@@ -44,7 +53,7 @@ class AuthRegisterConfirmationCode extends Mailable
             markdown: 'emails.auth.register.confirmation_code',
             with: [
               'verificationCode' => $this->verificationCode,
-              'actionUrl' => config('app.url') . "/admin/auth/register/confirm/{$this->email}/{$this->verificationCode}"
+              'actionUrl' => $this->actionUrl
             ],
         );
     }
