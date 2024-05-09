@@ -28,6 +28,7 @@ use App\Models\tenant\UserEmailChange;
 use App\Models\tenant\Collection;
 use App\Models\tenant\FieldType;
 use App\Models\tenant\Page;
+use App\Models\tenant\Setting;
 
 class AuthController extends Controller
 {
@@ -138,6 +139,13 @@ class AuthController extends Controller
     ]);
 
     try {
+
+      $allPublicRegister = Setting::where('key', 'public_auth_register')->first();
+      if(!$allPublicRegister){
+        return response([
+          'message' => 'Public user registration is disabled.'
+        ], 401);
+      }
 
       // Create tenant
       $user = new User;

@@ -21,6 +21,6 @@ class Setting extends Model
   protected $appends = [];
 
   protected $casts = [
-    'value' => 'array'
+    'value' => 'json'
   ];
 }

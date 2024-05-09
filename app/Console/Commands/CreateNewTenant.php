@@ -122,9 +122,11 @@ class CreateNewTenant extends Command
         [
           'key' => "request_logging",
           'value' => false
-        ],
-        [
+        ],[
           'key' => "client_request_logging",
+          'value' => false
+        ],[
+          'key' => "public_auth_register",
           'value' => false
         ],
       ]);

@@ -26,45 +26,48 @@ class TenantDatabaseSeeder extends Seeder
 
     \App\Models\tenant\User::factory(10)->create();
 
-    ClientFingerprint::factory(100)->create();
+    // Fingerprinting & analytics
+    // ==========================
+    
+    // ClientFingerprint::factory(100)->create();
 
-    for ($i = 0; $i < 365; $i++) {
-      ClientAnalytic::factory()->create([
-        'date' => Carbon::now()->subDays($i),
-        'request_count' => rand(100, 200),
-      ]);
-    }
+    // for ($i = 0; $i < 365; $i++) {
+    //   ClientAnalytic::factory()->create([
+    //     'date' => Carbon::now()->subDays($i),
+    //     'request_count' => rand(100, 200),
+    //   ]);
+    // }
 
-    $allAnalytics = ClientAnalytic::all();
+    // $allAnalytics = ClientAnalytic::all();
 
-    foreach ($allAnalytics as $analytic) {
-      $randomFingerprints = ClientFingerprint::inRandomOrder()->take(rand(10, 50))->get();
+    // foreach ($allAnalytics as $analytic) {
+    //   $randomFingerprints = ClientFingerprint::inRandomOrder()->take(rand(10, 50))->get();
 
-      $syncFingerprints = [];
+    //   $syncFingerprints = [];
 
-      foreach ($randomFingerprints as $randomFingerprint) {
-        $syncFingerprints[$randomFingerprint->id] = [
-          'request_count' => floor($analytic->request_count / sizeof($randomFingerprints))
-        ];
-      }
+    //   foreach ($randomFingerprints as $randomFingerprint) {
+    //     $syncFingerprints[$randomFingerprint->id] = [
+    //       'request_count' => floor($analytic->request_count / sizeof($randomFingerprints))
+    //     ];
+    //   }
 
-      // Attach to request
-      $analytic->fingerprints()->syncWithoutDetaching($syncFingerprints);
+    //   // Attach to request
+    //   $analytic->fingerprints()->syncWithoutDetaching($syncFingerprints);
 
-      foreach ($randomFingerprints as $fingerprint) {
+    //   foreach ($randomFingerprints as $fingerprint) {
 
-        $existingCountry = ClientAnalyticCountry::where('client_analytic_id', $analytic->id)->where('country_code', $fingerprint->country_code)->first();
+    //     $existingCountry = ClientAnalyticCountry::where('client_analytic_id', $analytic->id)->where('country_code', $fingerprint->country_code)->first();
 
-        if ($existingCountry) {
-          $existingCountry->request_count = $existingCountry->request_count + floor($analytic->request_count / sizeof($randomFingerprints));
-        } else {
-          ClientAnalyticCountry::factory()->create([
-            'client_analytic_id' => $analytic->id,
-            'country_code' => $fingerprint->country_code,
-            'request_count' => floor($analytic->request_count / sizeof($randomFingerprints))
-          ]);
-        }
-      }
-    }
+    //     if ($existingCountry) {
+    //       $existingCountry->request_count = $existingCountry->request_count + floor($analytic->request_count / sizeof($randomFingerprints));
+    //     } else {
+    //       ClientAnalyticCountry::factory()->create([
+    //         'client_analytic_id' => $analytic->id,
+    //         'country_code' => $fingerprint->country_code,
+    //         'request_count' => floor($analytic->request_count / sizeof($randomFingerprints))
+    //       ]);
+    //     }
+    //   }
+    // }
   }
 }
