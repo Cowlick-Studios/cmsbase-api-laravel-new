@@ -26,8 +26,6 @@ class FileController extends Controller
 
       $query = File::query();
 
-      $query->with(['collections']);
-
       if ($request->query('name')) {
         $query->where('name', 'LIKE', "%{$request->query('name')}%");
       }
@@ -66,7 +64,7 @@ class FileController extends Controller
         $query = $this->paginate($query, $request->query('page'), $request->query('quantity'));
       }
 
-      $files = $query->latest()->get();
+      $files = $query->latest()->with('collections')->get();
 
       return response([
         'message' => 'List of file records.',
@@ -340,12 +338,11 @@ class FileController extends Controller
     }
   }
 
-  public function syncCollections(Request $request, $file)
+  public function syncCollections(Request $request, File $file)
   {
     try {
 
-      $fileRecord = File::where('id', $file)->first();
-      $fileRecord->collections()->sync($request->collection_ids);
+      $file->collections()->sync($request->collection_ids);
 
       return response([
         'message' => 'Add file to collection.',
