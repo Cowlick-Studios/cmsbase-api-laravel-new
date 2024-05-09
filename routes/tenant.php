@@ -187,43 +187,43 @@ Route::group([
   });
 });
 
-// Route::prefix('admin')->group(function () {
-//   // Admin routes
-//   Route::prefix('auth')->group(function () {
-//     Route::post('/login', [AuthController::class, 'login']);
+Route::prefix('admin')->group(function () {
+  // Admin routes
+  Route::prefix('auth')->group(function () {
+    Route::post('/login', [AuthController::class, 'login']);
 
-//     Route::get('/register/confirm/{email}/{verification_code}', [AuthController::class, 'registerConfirm']);
+    Route::get('/register/confirm/{email}/{verification_code}', [AuthController::class, 'registerConfirm']);
 
-//     Route::post('/password_reset', [AuthController::class, 'passwordReset']);
-//     Route::get('/password_reset/confirm/{email}/{verification_code}', [AuthController::class, 'passwordResetConfirm']);
+    Route::post('/password_reset', [AuthController::class, 'passwordReset']);
+    Route::get('/password_reset/confirm/{email}/{verification_code}', [AuthController::class, 'passwordResetConfirm']);
 
-//     Route::post('/email_change', [AuthController::class, 'emailChange']);
-//     Route::get('/email_change/confirm/old/{email}/{verification_code}', [AuthController::class, 'emailChangeConfirmOld']);
-//     Route::get('/email_change/confirm/new/{email}/{verification_code}', [AuthController::class, 'emailChangeConfirmNew']);
-//   });
+    Route::post('/email_change', [AuthController::class, 'emailChange']);
+    Route::get('/email_change/confirm/old/{email}/{verification_code}', [AuthController::class, 'emailChangeConfirmOld']);
+    Route::get('/email_change/confirm/new/{email}/{verification_code}', [AuthController::class, 'emailChangeConfirmNew']);
+  });
 
-//   Route::prefix('dashboard')->middleware(AuthenticateToken::class)->group(function () {
-//     Route::get('/', [DashboardController::class, 'index']);
-//   });
+  Route::prefix('dashboard')->middleware(AuthenticateToken::class)->group(function () {
+    Route::get('/', [DashboardController::class, 'index']);
+  });
 
-//   Route::prefix('tenant')->middleware(AuthenticateToken::class)->group(function () {
-//     Route::get('/', [TenantController::class, 'index']);
-//     Route::get('/{tenant}', [TenantController::class, 'show']);
-//     Route::post('/', [TenantController::class, 'create']);
-//     Route::put('/{tenant}', [TenantController::class, 'update']);
-//     Route::patch('/{tenant}', [TenantController::class, 'update']);
-//     Route::delete('/{tenant}', [TenantController::class, 'destroy']);
-//   });
+  Route::prefix('tenant')->middleware(AuthenticateToken::class)->group(function () {
+    Route::get('/', [TenantController::class, 'index']);
+    Route::get('/{tenant}', [TenantController::class, 'show']);
+    Route::post('/', [TenantController::class, 'create']);
+    Route::put('/{tenant}', [TenantController::class, 'update']);
+    Route::patch('/{tenant}', [TenantController::class, 'update']);
+    Route::delete('/{tenant}', [TenantController::class, 'destroy']);
+  });
 
-//   Route::prefix('user')->middleware(AuthenticateToken::class)->group(function () {
-//     Route::get('/', [UserController::class, 'index']);
-//     Route::get('/{user}', [UserController::class, 'show']);
-//     Route::post('/', [UserController::class, 'create']);
-//     Route::put('/{user}', [UserController::class, 'update']);
-//     Route::patch('/{user}', [UserController::class, 'update']);
-//     Route::delete('/{user}', [UserController::class, 'destroy']);
+  Route::prefix('user')->middleware(AuthenticateToken::class)->group(function () {
+    Route::get('/', [UserController::class, 'index']);
+    Route::get('/{user}', [UserController::class, 'show']);
+    Route::post('/', [UserController::class, 'create']);
+    Route::put('/{user}', [UserController::class, 'update']);
+    Route::patch('/{user}', [UserController::class, 'update']);
+    Route::delete('/{user}', [UserController::class, 'destroy']);
 
-//     // Forgot password
-//     // Verify forgotten password
-//   });
-// });
+    // Forgot password
+    // Verify forgotten password
+  });
+});
