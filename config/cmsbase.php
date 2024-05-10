@@ -47,6 +47,7 @@ return [
     'request_logging' => false,
     'client_request_logging' => false,
     'public_auth_register' => false,
-    'default_origin' => 'localhost'
+    'default_origin' => 'localhost',
+    'email_submission_logs' => false
   ]
 ];
