@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('email_submissions', function (Blueprint $table) {
             $table->id();
             $table->string('name');
+            $table->string('origin')->nullable();
             $table->timestamps();
 
             $table->index(['name']);

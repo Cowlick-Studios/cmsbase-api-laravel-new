@@ -46,6 +46,7 @@ return [
   'default_settings' => [
     'request_logging' => false,
     'client_request_logging' => false,
-    'public_auth_register' => false
+    'public_auth_register' => false,
+    'default_origin' => 'localhost'
   ]
 ];

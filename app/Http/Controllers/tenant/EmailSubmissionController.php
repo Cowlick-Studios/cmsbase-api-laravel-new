@@ -40,12 +40,21 @@ class EmailSubmissionController extends Controller
   public function store(Request $request)
   {
     $request->validate([
-      'name' => ['required', Rule::unique('email_submissions')]
+      'name' => ['required', Rule::unique('email_submissions')],
+      'origin' => ['string']
     ]);
 
     try {
+
+      $formOrigin = config('cmsbase.default_settings.default_origin');
+
+      if($request->has('origin') && $request->origin){
+        $formOrigin = $request->origin;
+      }
+
       $newEmailSubmission = EmailSubmission::create([
-        'name' => Str::of($request->name)->slug('_')
+        'name' => Str::of($request->name)->slug('_'),
+        'origin' => $formOrigin
       ]);
 
       $newEmailSubmission->load(['fields', 'fields.type']);
@@ -65,7 +74,8 @@ class EmailSubmissionController extends Controller
   {
 
     $request->validate([
-      'name' => ['required', Rule::unique('email_submissions')]
+      'name' => ["string", Rule::unique('email_submissions')],
+      'origin' => ["string"]
     ]);
 
     try {
@@ -74,11 +84,15 @@ class EmailSubmissionController extends Controller
         $emailSubmission->name = Str::of($request->name)->slug('_');
       }
 
+      if ($request->has('origin')) {
+        $emailSubmission->origin = $request->origin;
+      }
+
       $emailSubmission->save();
 
       return response([
         'message' => 'Updated email submission.',
-        'email_submission' => $updatedEmailSubmission
+        'email_submission' => $emailSubmission
       ], 200);
     } catch (Exception $e) {
       return response([
@@ -224,6 +238,21 @@ class EmailSubmissionController extends Controller
     try {
 
       $emailSubmission = EmailSubmission::with(['fields', 'fields.type', 'recipients'])->where('name', $emailSubmissionName)->first();
+
+      if(!$emailSubmission){
+				return Response([
+					'message' => 'No matching form submission.'
+				], 404);
+			}
+
+			$originHost = parse_url($request->header('origin'), PHP_URL_HOST);
+
+			if($originHost != $emailSubmission->origin){
+				return Response([
+					'message' => 'Form submission cannot occur from this origin.',
+					'origin' => $originHost
+				], 401);
+			}
 
       $formSubmissionObj = [];
 
