@@ -15,6 +15,8 @@ use App\Mail\AuthRegisterConfirmationCode;
 
 use App\Models\User;
 use App\Models\UserRegister;
+use App\Models\UserEmailChange;
+use App\Models\userPasswordReset;
 
 class UserController extends Controller
 {
@@ -134,6 +136,10 @@ class UserController extends Controller
     try {
 
       UserRegister::where('email', $user->email)->delete();
+      UserPasswordReset::where('email', $user->email)->delete();
+      UserEmailChange::where('email', $user->email)->delete();
+      UserEmailChange::where('new_email', $user->email)->delete();
+
       $user->delete();
 
       return response([

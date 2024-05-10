@@ -14,6 +14,8 @@ use Illuminate\Support\Facades\Hash;
 
 use App\Models\tenant\User;
 use App\Models\tenant\UserRegister;
+use App\Models\tenant\UserPasswordReset;
+use App\Models\tenant\UserEmailChange;
 
 use App\Mail\AuthRegisterConfirmationCode;
 
@@ -108,7 +110,7 @@ class UserController extends Controller
       $emailVerification->save();
 
       // Send mail confirmation
-      Mail::to($user)->send(new AuthRegisterConfirmationCode($user->email, $emailVerification->code, tenant()->id));
+      Mail::to($user)->send(new AuthRegisterConfirmationCode($user->email, $emailVerification->verification_code, tenant()->id));
 
       return response([
         'message' => 'User created.',
@@ -166,6 +168,11 @@ class UserController extends Controller
   public function destroy(Request $request, User $user)
   {
     try {
+
+      UserRegister::where('email', $user->email)->delete();
+      UserPasswordReset::where('email', $user->email)->delete();
+      UserEmailChange::where('email', $user->email)->delete();
+      UserEmailChange::where('new_email', $user->email)->delete();
 
       $user->delete();
 

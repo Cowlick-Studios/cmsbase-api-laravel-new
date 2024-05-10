@@ -163,7 +163,7 @@ class AuthController extends Controller
       $emailVerification->save();
 
       // Send mail confirmation
-      Mail::to($user)->send(new AuthRegisterConfirmationCode($user->email, $emailVerification->code, tenant()->id));
+      Mail::to($user)->send(new AuthRegisterConfirmationCode($user->email, $emailVerification->verification_code, tenant()->id));
 
       return response([
         'message' => 'Register.'
@@ -175,19 +175,15 @@ class AuthController extends Controller
     }
   }
 
-  public function registerConfirm(Request $request)
+  public function registerConfirm(Request $request, $email, $verification_code)
   {
-    $request->validate([
-      'email' => 'required',
-      'verification_code' => 'required'
-    ]);
 
     try {
-      $emailVerification = UserRegister::where('email', $request->email)->first();
+      $emailVerification = UserRegister::where('email', $email)->first();
 
-      $user = User::where('email', $request->email)->first();
+      $user = User::where('email', $email)->first();
 
-      if ($request->verification_code == $emailVerification->verification_code) {
+      if ($verification_code == $emailVerification->verification_code) {
         $user->email_verified_at = now();
         $user->save();
 
@@ -199,7 +195,7 @@ class AuthController extends Controller
         $emailVerification->verification_code = $this->generateVerificationCode();
         $emailVerification->save();
 
-        Mail::to($user)->send(new AuthRegisterConfirmationCode($user->email, $emailVerification->code, tenant()->id));
+        Mail::to($user)->send(new AuthRegisterConfirmationCode($user->email, $emailVerification->verification_code, tenant()->id));
 
         return response([
           'message' => 'Verification code is incorrect, new code sent to email.'
