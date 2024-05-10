@@ -118,27 +118,19 @@ class TenantController extends Controller
       // Seed tenant data
       $tenant->run(function (Tenant $tenant) {
 
-        $types = config("cmsbase.collection_types");
-
-        foreach ($types as $index => $type) {
+        foreach (config("cmsbase.collection_types") as $index => $type) {
           $fieldType = FieldType::create([
             'name' => $index,
             'datatype' => $type
           ]);
         }
 
-        $tenantRequestLoggingSetting = Setting::insert([
-          [
-            'key' => "request_logging",
-            'value' => false
-          ],[
-            'key' => "client_request_logging",
-            'value' => false
-          ],[
-            'key' => "public_auth_register",
-            'value' => false
-          ],
-        ]);
+        foreach (config("cmsbase.default_settings") as $index => $type) {
+          $setting = Setting::create([
+            'key' => $index,
+            'value' => $type
+          ]);
+        }
       });
 
       return response([

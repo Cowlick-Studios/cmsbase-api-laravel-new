@@ -71,65 +71,19 @@ class CreateNewTenant extends Command
     // Seed tenant data
     $tenant->run(function (Tenant $tenant) {
 
-      $types = [
-        // integer
-        "tinyInteger",
-        "unsignedTinyInteger",
-        "smallInteger",
-        "unsignedSmallInteger",
-        "integer",
-        "unsignedInteger",
-        "mediumInteger",
-        "unsignedMediumInteger",
-        "bigInteger",
-        "unsignedBigInteger",
-
-        // float
-        "decimal",
-        "unsignedDecimal",
-        "float",
-        "double",
-
-        // text
-        "char",
-        "string",
-        "tinyText",
-        "text",
-        "mediumText",
-        "longText",
-
-        //other
-        "boolean",
-        "date",
-        "time",
-        "dateTime",
-        "timestamp",
-      ];
-
-      foreach ($types as $index => $type) {
-        $FieldType = FieldType::create([
-          'name' => $type,
+      foreach (config("cmsbase.collection_types") as $index => $type) {
+        $fieldType = FieldType::create([
+          'name' => $index,
           'datatype' => $type
         ]);
       }
 
-      $FieldTypeRichText = FieldType::create([
-        'name' => "richText",
-        'datatype' => "longText"
-      ]);
-
-      $tenantRequestLoggingSetting = Setting::insert([
-        [
-          'key' => "request_logging",
-          'value' => false
-        ],[
-          'key' => "client_request_logging",
-          'value' => false
-        ],[
-          'key' => "public_auth_register",
-          'value' => false
-        ],
-      ]);
+      foreach (config("cmsbase.default_settings") as $index => $type) {
+        $defaultSetting = Setting::create([
+          'key' => $index,
+          'value' => $type
+        ]);
+      }
     });
 
     $this->info('Tenant ' . $tenantName . ' created!');

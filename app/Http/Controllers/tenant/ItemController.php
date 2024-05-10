@@ -78,7 +78,7 @@ class ItemController extends Controller
 
       $formattedValue = null;
 
-      switch ($itemType->name) {
+      switch ($itemType->datatype) {
         case "tinyInteger":
           $formattedValue = (string)$request->value;
           break;
@@ -203,7 +203,7 @@ class ItemController extends Controller
       if ($request->has('value')) {
         $formattedValue = null;
 
-        switch ($item->type->name) {
+        switch ($item->type->datatype) {
           case "tinyInteger":
             $formattedValue = (string)$request->value;
             break;

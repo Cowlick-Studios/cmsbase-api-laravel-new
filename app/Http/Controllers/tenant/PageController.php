@@ -113,7 +113,7 @@ class PageController extends Controller
 
             $tempDataObject[$field->name] = $request->data[$field->name];
 
-            switch ($field->type->name) {
+            switch ($field->type->datatype) {
               case "tinyInteger":
                 $tempDataObject[$field->name] = (string)$request->data[$field->name];
                 break;

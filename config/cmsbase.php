@@ -39,6 +39,13 @@ return [
     "timestamp" => "timestamp",
 
     // custom
-    "richText" => "longText"
+    "richText" => "longText",
+    "file" => "unsignedBigInteger"
+  ],
+
+  'default_settings' => [
+    'request_logging' => false,
+    'client_request_logging' => false,
+    'public_auth_register' => false
   ]
 ];
