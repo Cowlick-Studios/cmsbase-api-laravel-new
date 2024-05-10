@@ -7,12 +7,13 @@ use Illuminate\Http\Request;
 use Exception;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Mail;
 
 use App\Models\tenant\User;
 use App\Models\tenant\EmailSubmission;
 use App\Models\tenant\EmailSubmissionField;
 use App\Models\tenant\FieldType;
-use Illuminate\Support\Facades\Mail;
+use App\Models\EmailSubmissionLog;
 
 use App\Mail\EmailSubmission as EmailSubmissionMailer;
 
@@ -41,20 +42,13 @@ class EmailSubmissionController extends Controller
   {
     $request->validate([
       'name' => ['required', Rule::unique('email_submissions')],
-      'origin' => ['string']
     ]);
 
     try {
 
-      $formOrigin = config('cmsbase.default_settings.default_origin');
-
-      if($request->has('origin') && $request->origin){
-        $formOrigin = $request->origin;
-      }
-
       $newEmailSubmission = EmailSubmission::create([
         'name' => Str::of($request->name)->slug('_'),
-        'origin' => $formOrigin
+        'origin' => $request->origin
       ]);
 
       $newEmailSubmission->load(['fields', 'fields.type']);
@@ -75,7 +69,6 @@ class EmailSubmissionController extends Controller
 
     $request->validate([
       'name' => ["string", Rule::unique('email_submissions')],
-      'origin' => ["string"]
     ]);
 
     try {
@@ -250,7 +243,8 @@ class EmailSubmissionController extends Controller
 			if($originHost != $emailSubmission->origin){
 				return Response([
 					'message' => 'Form submission cannot occur from this origin.',
-					'origin' => $originHost
+					'requesting_origin' => $request->header('origin'),
+          'allowed_origin' => $emailSubmission->origin
 				], 401);
 			}
 
@@ -259,6 +253,12 @@ class EmailSubmissionController extends Controller
       foreach ($emailSubmission->fields as $field) {
         $formSubmissionObj[$field->name] = $request[$field->name];
       }
+
+      $emailSubmissionLog = EmailSubmissionLog::create([
+				'email_submission_id' => $emailSubmission->id,
+				'submission_data' => $formSubmissionObj
+			]);
+			$emailSubmissionLog->save();
 
       foreach ($emailSubmission->recipients as $recipient) {
         if (!$recipient->blocked && $recipient->email_verified_at && !$recipient->public) { // Verify user is admin, verified and not blocked
