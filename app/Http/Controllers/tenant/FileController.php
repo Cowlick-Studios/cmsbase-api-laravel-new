@@ -151,8 +151,7 @@ class FileController extends Controller
 
       return response([
         'message' => 'File has been uploaded.',
-        "original" => $file->getClientOriginalName(),
-        "uri" => $urlPath
+        "file" => $newFile
       ], 200);
     } catch (QueryException $e) {
       return response([
@@ -231,10 +230,7 @@ class FileController extends Controller
           $urlPath = "/file/{$request->collection}/{$filePath}";
         }
 
-        array_push($uploads, [
-          "original" => $file->getClientOriginalName(),
-          "uri" => $urlPath
-        ]);
+        array_push($uploads, $newFile);
       } catch (QueryException $e) {
         array_push($failedUploads, [
           "original" => $file->getClientOriginalName(),
