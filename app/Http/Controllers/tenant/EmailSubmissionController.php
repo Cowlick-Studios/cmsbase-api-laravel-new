@@ -16,6 +16,7 @@ use App\Models\tenant\FieldType;
 use App\Models\EmailSubmissionLog;
 
 use App\Mail\EmailSubmission as EmailSubmissionMailer;
+use App\Models\tenant\Setting;
 
 class EmailSubmissionController extends Controller
 {
@@ -254,12 +255,16 @@ class EmailSubmissionController extends Controller
         $formSubmissionObj[$field->name] = $request[$field->name];
       }
 
-      $emailSubmissionLog = EmailSubmissionLog::create([
-				'email_submission_id' => $emailSubmission->id,
-				'submission_data' => $formSubmissionObj
-			]);
-			$emailSubmissionLog->save();
+      $emailLogSetting = Setting::where('key', 'email_submission_logs')->first();
 
+      if($emailLogSetting->value){
+        $emailSubmissionLog = EmailSubmissionLog::create([
+          'email_submission_id' => $emailSubmission->id,
+          'submission_data' => $formSubmissionObj
+        ]);
+        $emailSubmissionLog->save();
+      }
+      
       foreach ($emailSubmission->recipients as $recipient) {
         if (!$recipient->blocked && $recipient->email_verified_at && !$recipient->public) { // Verify user is admin, verified and not blocked
           Mail::to($recipient)->send(new EmailSubmissionMailer($emailSubmission, $formSubmissionObj));
