@@ -13,7 +13,7 @@ use App\Models\tenant\User;
 use App\Models\tenant\EmailSubmission;
 use App\Models\tenant\EmailSubmissionField;
 use App\Models\tenant\FieldType;
-use App\Models\EmailSubmissionLog;
+use App\Models\tenant\EmailSubmissionLog;
 
 use App\Mail\EmailSubmission as EmailSubmissionMailer;
 use App\Models\tenant\Setting;

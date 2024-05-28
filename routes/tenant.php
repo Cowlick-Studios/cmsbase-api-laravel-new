@@ -36,6 +36,7 @@ use App\Http\Controllers\tenant\EmailSubmissionController;
 use App\Http\Controllers\tenant\AnalyticsController;
 use App\Http\Controllers\tenant\PageController;
 use App\Http\Controllers\tenant\ItemController;
+use App\Http\Controllers\tenant\FormSubmissionController;
 
 /*
 |--------------------------------------------------------------------------
@@ -172,18 +173,32 @@ Route::group([
     Route::middleware([AuthenticateTokenTenant::class, LogRequestResponse::class])->delete('/{collection}/file/{file}', [FileCollectionController::class, 'removeFile']);
   });
 
-  Route::prefix('email_submission')->group(function () {
-    Route::middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class, LogRequestResponse::class])->get('/', [EmailSubmissionController::class, 'index']);
-    Route::middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class, LogRequestResponse::class])->post('/', [EmailSubmissionController::class, 'store']);
-    Route::middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class, LogRequestResponse::class])->patch('/{emailSubmission}', [EmailSubmissionController::class, 'update']);
-    Route::middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class, LogRequestResponse::class])->delete('/{emailSubmission}', [EmailSubmissionController::class, 'destroy']);
-    Route::middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class, LogRequestResponse::class])->post('/{emailSubmission}/field', [EmailSubmissionController::class, 'addField']);
-    Route::middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class, LogRequestResponse::class])->delete('/{emailSubmission}/field/{field}', [EmailSubmissionController::class, 'removeField']);
-    Route::middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class, LogRequestResponse::class])->post('/{emailSubmission}/recipient', [EmailSubmissionController::class, 'addRecipient']);
-    Route::middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class, LogRequestResponse::class])->post('/{emailSubmission}/recipient/sync', [EmailSubmissionController::class, 'syncRecipient']);
-    Route::middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class, LogRequestResponse::class])->delete('/{emailSubmission}/recipient/{user}', [EmailSubmissionController::class, 'removeRecipient']);
+  // Route::prefix('email_submission')->group(function () {
+  //   Route::middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class, LogRequestResponse::class])->get('/', [EmailSubmissionController::class, 'index']);
+  //   Route::middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class, LogRequestResponse::class])->post('/', [EmailSubmissionController::class, 'store']);
+  //   Route::middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class, LogRequestResponse::class])->patch('/{emailSubmission}', [EmailSubmissionController::class, 'update']);
+  //   Route::middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class, LogRequestResponse::class])->delete('/{emailSubmission}', [EmailSubmissionController::class, 'destroy']);
+  //   Route::middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class, LogRequestResponse::class])->post('/{emailSubmission}/field', [EmailSubmissionController::class, 'addField']);
+  //   Route::middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class, LogRequestResponse::class])->delete('/{emailSubmission}/field/{field}', [EmailSubmissionController::class, 'removeField']);
+  //   Route::middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class, LogRequestResponse::class])->post('/{emailSubmission}/recipient', [EmailSubmissionController::class, 'addRecipient']);
+  //   Route::middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class, LogRequestResponse::class])->post('/{emailSubmission}/recipient/sync', [EmailSubmissionController::class, 'syncRecipient']);
+  //   Route::middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class, LogRequestResponse::class])->delete('/{emailSubmission}/recipient/{user}', [EmailSubmissionController::class, 'removeRecipient']);
 
-    Route::middleware([LogRequestResponse::class])->post('/{emailSubmissionName}/submit', [EmailSubmissionController::class, 'submit']);
+  //   Route::middleware([LogRequestResponse::class])->post('/{emailSubmissionName}/submit', [EmailSubmissionController::class, 'submit']);
+  // });
+
+  Route::prefix('form_submission')->group(function () {
+    Route::middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class, LogRequestResponse::class])->get('/', [FormSubmissionController::class, 'index']);
+    Route::middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class, LogRequestResponse::class])->post('/', [FormSubmissionController::class, 'store']);
+    Route::middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class, LogRequestResponse::class])->patch('/{formSubmission}', [FormSubmissionController::class, 'update']);
+    Route::middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class, LogRequestResponse::class])->delete('/{formSubmission}', [FormSubmissionController::class, 'destroy']);
+    Route::middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class, LogRequestResponse::class])->post('/{formSubmission}/field', [FormSubmissionController::class, 'addField']);
+    Route::middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class, LogRequestResponse::class])->delete('/{formSubmission}/field/{field}', [FormSubmissionController::class, 'removeField']);
+    Route::middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class, LogRequestResponse::class])->post('/{formSubmission}/recipient', [FormSubmissionController::class, 'addRecipient']);
+    Route::middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class, LogRequestResponse::class])->post('/{formSubmission}/recipient/sync', [FormSubmissionController::class, 'syncRecipient']);
+    Route::middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class, LogRequestResponse::class])->delete('/{formSubmission}/recipient/{user}', [FormSubmissionController::class, 'removeRecipient']);
+
+    Route::middleware([LogRequestResponse::class])->post('/{formSubmissionName}/submit', [FormSubmissionController::class, 'submit']);
   });
 });
 
