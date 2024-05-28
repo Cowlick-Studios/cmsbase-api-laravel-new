@@ -58,6 +58,7 @@ class RemoveTenant extends Command
 
       // Remove storage directory
       $this->rrmdir(base_path() . "/storage/tenant-{$tenant->id}");
+      $this->rrmdir(base_path() . "/storage/app/public/tenant/{$tenant->id}");
 
       $this->info('Tenant ' . $tenant->id . ' deleted!');
     }

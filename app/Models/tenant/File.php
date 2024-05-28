@@ -40,12 +40,9 @@ class File extends Model
     public function getUriAttribute()
     {
       $filePath = "{$this->name}.{$this->extension}";
+      $tenantId = tenant()->id;
 
-      $urlPath = "/file/{$filePath}";
-
-      if($this->collection){
-        $urlPath = "/file/{$this->collection}/{$filePath}";
-      }
+      $urlPath = "/storage/tenant/{$tenantId}/{$filePath}";
       
       return $urlPath;
     }

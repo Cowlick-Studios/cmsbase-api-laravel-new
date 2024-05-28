@@ -158,7 +158,7 @@ Route::group([
     Route::middleware([AuthenticateTokenTenant::class, LogRequestResponse::class])->patch('/{file}/collection', [FileController::class, 'syncCollections']);
     Route::middleware([AuthenticateTokenTenant::class, LogRequestResponse::class])->delete('/{file}/collection', [FileController::class, 'detachCollections']);
 
-    Route::middleware([LogRequestResponse::class])->get('/{fileName}', [FileController::class, 'retrieveFile']);
+    // Route::middleware([LogRequestResponse::class])->get('/{fileName}', [FileController::class, 'retrieveFile']);
   });
 
   Route::prefix('file_collection')->group(function () {

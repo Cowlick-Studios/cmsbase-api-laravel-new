@@ -186,6 +186,7 @@ class TenantController extends Controller
     try {
 
       $this->rrmdir(base_path() . "/storage/tenant-{$tenant->id}");
+      $this->rrmdir(base_path() . "/storage/app/public/tenant/{$tenant->id}");
       $tenant->delete();
 
       return response([

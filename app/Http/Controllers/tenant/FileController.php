@@ -92,32 +92,44 @@ class FileController extends Controller
       if (!$request->hasFile('file')) {
         return response([
           'message' => 'No file selected for upload.',
-        ], 500);
+        ], 400);
       }
 
-      // $file = $request->hasFile('file');
-      $file = $request->file('file');
+      // If file is valid
+      if (!$request->file('file')->isValid()) {
+        return response([
+          'message' => 'Uploaded file is not valid.',
+        ], 400);
+      }
 
+      $file = $request->file('file');
+      $tenantId = tenant()->id;
       $storagePath = null;
 
-      if ($request->use_name) {
-        $existingFileRecord = File::where('name', Str::of(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME))->slug())->where('extension', $file->extension())->first();
+      // File save to disk
+      if($request->use_name){
+        $safeFileName = Str::of(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME))->slug();
+        $existingFileRecord = File::where('name', $safeFileName)->where('extension', $file->extension())->first();
+
         if ($existingFileRecord) {
           return response([
             'message' => 'A file with this name already exists.'
           ], 409);
-        } else {
-          $slugFileName = Str::of(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME))->slug() . "." . $file->extension();
-          $storagePath = Storage::disk('public')->putFileAs(null, $file, $slugFileName);
         }
+
+        // Access file in public as /storage/tenant/tenantId/filename.mime
+        $storagePath = Storage::disk('public')->putFileAs("tenant/$tenantId", $file, $safeFileName . "." . $file->extension());
       } else {
-        $storagePath = Storage::disk('public')->putFile(null, $file);
+        // Access file in public as /storage/tenant/tenantId/filename.mime
+        $storagePath = Storage::disk('public')->putFile("tenant/$tenantId", $file);
       }
 
+      // Create file record
       $explodeStoragePath = explode(".", $storagePath);
+      $namePath = explode("/", $explodeStoragePath[0]);
 
       [$width, $height] = getimagesize($file);
-      $filename = $explodeStoragePath[0];
+      $filename = $namePath[sizeof($namePath)-1];
       $extension = $explodeStoragePath[1];
 
       $newFile = new File;
@@ -141,14 +153,6 @@ class FileController extends Controller
 
       $newFile->save();
 
-      $filePath = "{$filename}.{$extension}";
-      $urlPath = "/file/{$filePath}";
-
-      if ($request->has('collection')) {
-        $newFile->collection = Str::of($request->collection)->slug();
-        $urlPath = "/file/{$request->collection}/{$filePath}";
-      }
-
       return response([
         'message' => 'File has been uploaded.',
         "file" => $newFile
@@ -170,6 +174,7 @@ class FileController extends Controller
     ]);
 
     $files = $request->file('files');
+    $tenantId = tenant()->id;
 
     $uploads = [];
     $failedUploads = [];
@@ -180,25 +185,29 @@ class FileController extends Controller
         $storagePath = null;
 
         if ($request->use_name) {
-          $existingFileRecord = File::where('name', Str::of(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME))->slug())->where('extension', $file->extension())->first();
+          $safeFileName = Str::of(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME))->slug();
+          $existingFileRecord = File::where('name', $safeFileName)->where('extension', $file->extension())->first();
+
           if ($existingFileRecord) {
+
             array_push($failedUploads, [
               "original" => $file->getClientOriginalName(),
               "error" => "A file with this name already exists."
             ]);
             continue;
+
           } else {
-            $slugFileName = Str::of(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME))->slug() . "." . $file->extension();
-            $storagePath = Storage::disk('public')->putFileAs(null, $file, $slugFileName);
+            $storagePath = Storage::disk('public')->putFileAs("tenant/$tenantId", $file, $safeFileName . "." . $file->extension());
           }
         } else {
-          $storagePath = Storage::disk('public')->putFile(null, $file);
+          $storagePath = Storage::disk('public')->putFile("tenant/$tenantId", $file);
         }
 
         $explodeStoragePath = explode(".", $storagePath);
+        $namePath = explode("/", $explodeStoragePath[0]);
 
         [$width, $height] = getimagesize($file);
-        $filename = $explodeStoragePath[0];
+        $filename = $namePath[sizeof($namePath)-1];
         $extension = $explodeStoragePath[1];
 
         $newFile = new File;
@@ -221,14 +230,6 @@ class FileController extends Controller
         }
 
         $newFile->save();
-
-        $filePath = "{$filename}.{$extension}";
-        $urlPath = "/file/{$filePath}";
-
-        if ($request->has('collection')) {
-          $newFile->collection = Str::of($request->collection)->slug();
-          $urlPath = "/file/{$request->collection}/{$filePath}";
-        }
 
         array_push($uploads, $newFile);
       } catch (QueryException $e) {
@@ -326,6 +327,7 @@ class FileController extends Controller
   public function retrieveFile(Request $request, $fileName)
   {
     if (Storage::disk('public')->exists($fileName)) {
+      //Response::make($file, 200)->header("Content-Type", $mimeType);
       return response()->file(storage_path("app/public/{$fileName}"));
     } else {
       return response([
