@@ -37,7 +37,9 @@ use App\Http\Controllers\tenant\AnalyticsController;
 use App\Http\Controllers\tenant\PageController;
 use App\Http\Controllers\tenant\ItemController;
 use App\Http\Controllers\tenant\FormSubmissionController;
-
+use App\Http\Controllers\tenant\MarketingListController;
+use App\Http\Controllers\tenant\MarketingListSubscriptionController;
+use App\Http\Controllers\tenant\MarketingMailerController;
 /*
 |--------------------------------------------------------------------------
 | Tenant Routes
@@ -199,6 +201,33 @@ Route::group([
     Route::middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class, LogRequestResponse::class])->delete('/{formSubmission}/recipient/{user}', [FormSubmissionController::class, 'removeRecipient']);
 
     Route::middleware([LogRequestResponse::class])->post('/{formSubmissionName}/submit', [FormSubmissionController::class, 'submit']);
+  });
+
+  Route::prefix('marketing_list')->group(function () {
+    Route::middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class, LogRequestResponse::class])->get('/', [MarketingListController::class, 'index']);
+    Route::middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class, LogRequestResponse::class])->get('/{mailingList}', [MarketingListController::class, 'show']);
+    Route::middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class, LogRequestResponse::class])->post('/', [MarketingListController::class, 'store']);
+    Route::middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class, LogRequestResponse::class])->patch('/{mailingList}', [MarketingListController::class, 'update']);
+    Route::middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class, LogRequestResponse::class])->delete('/{mailingList}', [MarketingListController::class, 'destroy']);
+
+    Route::prefix('/{mailingList}/subscription')->group(function () {
+      Route::middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class, LogRequestResponse::class])->get('/', [MarketingListSubscriptionController::class, 'index']);
+      Route::middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class, LogRequestResponse::class])->post('/', [MarketingListSubscriptionController::class, 'store']);
+      Route::middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class, LogRequestResponse::class])->delete('/{subscription}', [MarketingListSubscriptionController::class, 'destroy']);
+  
+      Route::middleware([LogRequestResponse::class])->post('/subscribe', [MarketingListSubscriptionController::class, 'subscribe']);
+      Route::middleware([LogRequestResponse::class])->get('/unsubscribe/{email}', [MarketingListSubscriptionController::class, 'unsubscribe']);
+    });
+  });
+
+  Route::prefix('marketing_mailer')->group(function () {
+    Route::middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class, LogRequestResponse::class])->get('/', [MarketingMailerController::class, 'index']);
+    Route::middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class, LogRequestResponse::class])->get('/{mailer}', [MarketingMailerController::class, 'show']);
+    Route::middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class, LogRequestResponse::class])->post('/', [MarketingMailerController::class, 'store']);
+    Route::middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class, LogRequestResponse::class])->patch('/{mailer}', [MarketingMailerController::class, 'update']);
+    Route::middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class, LogRequestResponse::class])->delete('/{mailer}', [MarketingMailerController::class, 'destroy']);
+
+    // Route::middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class, LogRequestResponse::class])->post('/{mailingList}/send', [MarketingMailerController::class, 'send']);
   });
 });
 
