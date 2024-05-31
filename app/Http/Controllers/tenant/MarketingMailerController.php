@@ -75,6 +75,8 @@ class MarketingMailerController extends Controller
     {
   
       $request->validate([
+        'name' => ['string'],
+        'subject' => ['string'],
         'unlayer_data' => ['json'],
         'html' => ['string'],
       ]);
