@@ -6,9 +6,12 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Exception;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Mail;
 
 use App\Models\tenant\MarketingMailingList;
 use App\Models\tenant\MarketingMailers;
+
+use App\Mail\SendHtmlMail;
 
 class MarketingMailerController extends Controller
 {
@@ -91,7 +94,7 @@ class MarketingMailerController extends Controller
       }
     }
   
-      public function destroy(Request $request, MarketingMailers $mailer)
+    public function destroy(Request $request, MarketingMailers $mailer)
     {
   
       $request->validate([
@@ -105,6 +108,24 @@ class MarketingMailerController extends Controller
   
         return response([
           'message' => 'Marketing mailer destroyed.'
+        ], 200);
+      } catch (Exception $e) {
+        return response([
+          'message' => $e->getMessage()
+        ], 500);
+      }
+    }
+
+    public function send(Request $request, MarketingMailers $mailer, MarketingMailingList $mailingList)
+    {  
+      try {
+
+        foreach($mailingList->subscribers as $subscriber){
+          Mail::to($subscriber->email)->send(new SendHtmlMail($mailer, $mailingList, $subscriber));
+        }
+        
+        return response([
+          'message' => 'Marketing mailer sent to mailing list.'
         ], 200);
       } catch (Exception $e) {
         return response([

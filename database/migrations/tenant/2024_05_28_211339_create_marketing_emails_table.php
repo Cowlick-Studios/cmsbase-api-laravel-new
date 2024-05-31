@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('marketing_mailers', function (Blueprint $table) {
             $table->id();
             $table->string('name');
+            $table->string('subject')->nullable();
             $table->json('unlayer_data')->nullable();
             $table->longText('html')->nullable();
             $table->timestamps();

@@ -213,7 +213,7 @@ Route::group([
     Route::middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class, LogRequestResponse::class])->patch('/{mailer}', [MarketingMailerController::class, 'update']);
     Route::middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class, LogRequestResponse::class])->delete('/{mailer}', [MarketingMailerController::class, 'destroy']);
 
-    // Route::middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class, LogRequestResponse::class])->post('/{mailingList}/send', [MarketingMailerController::class, 'send']);
+    Route::middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class, LogRequestResponse::class])->post('/{mailer}/list/{mailingList}/send', [MarketingMailerController::class, 'send']);
   });
 });
 

@@ -13,6 +13,7 @@ class MarketingMailers extends Model
 
 	protected $fillable = [
 		'name',
+		'subject',
 		'unlayer_data',
 		'html'
 	];
