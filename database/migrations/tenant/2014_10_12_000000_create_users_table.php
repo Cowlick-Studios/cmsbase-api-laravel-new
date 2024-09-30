@@ -19,6 +19,7 @@ return new class extends Migration
             $table->string('password');
             $table->boolean('public')->default(true);
             $table->boolean('blocked')->default(false);
+            $table->boolean('admin')->default(false);
             $table->rememberToken();
             $table->timestamps();
 

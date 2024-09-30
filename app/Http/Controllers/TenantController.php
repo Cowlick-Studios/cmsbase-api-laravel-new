@@ -43,8 +43,7 @@ class TenantController extends Controller
 
       return response([
         'message' => 'List all tenants.',
-        'tenants' => $tenants,
-        'test' => disk_free_space('/')
+        'tenants' => $tenants
       ], 200);
     } catch (Exception $e) {
       return response([
@@ -109,6 +108,8 @@ class TenantController extends Controller
           'blocked' => false
         ]);
 
+        $user->admin = true;
+
         $user->email_verified_at = now();
         $user->remember_token = Str::random(10);
 
@@ -148,6 +149,46 @@ class TenantController extends Controller
       return response([
         'message' => $e->getMessage(),
         'error' => $e
+      ], 500);
+    }
+  }
+
+  public function createTenantUser(Request $request, Tenant $tenant)
+  {
+
+    $request->validate([
+      'name' => ['required'],
+      'email' => ['required'],
+      'password' => ['required'],
+      'admin' => ['required'],
+    ]);
+
+    try {
+
+      $tenant->run(function (Tenant $tenant) use ($request) {
+        $user = User::create([
+          'name' => $request->name,
+          'email' => $request->email,
+          'password' => bcrypt($request->password),
+          'public' => false,
+          'blocked' => false
+        ]);
+
+        $user->admin = $request->admin;
+
+        $user->email_verified_at = now();
+        $user->remember_token = Str::random(10);
+
+        $user->save();
+      });
+
+      return response([
+        'message' => 'Updated tenant.',
+        'tenant' => $tenant
+      ], 200);
+    } catch (Exception $e) {
+      return response([
+        'message' => $e->getMessage()
       ], 500);
     }
   }

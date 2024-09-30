@@ -213,6 +213,8 @@ Route::prefix('admin')->group(function () {
     Route::put('/{tenant}', [TenantController::class, 'update']);
     Route::patch('/{tenant}', [TenantController::class, 'update']);
     Route::delete('/{tenant}', [TenantController::class, 'destroy']);
+    
+    Route::post('/{tenant}/user', [TenantController::class, 'createTenantUser']);
   });
 
   Route::prefix('user')->middleware(AuthenticateToken::class)->group(function () {

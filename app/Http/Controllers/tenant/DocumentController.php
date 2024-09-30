@@ -18,6 +18,7 @@ use App\Models\tenant\Collection;
 use App\Models\tenant\FieldType;
 use App\Models\tenant\CollectionField;
 use App\Models\tenant\User;
+use App\Models\tenant\File as TenantFile;
 
 class DocumentController extends Controller
 {
@@ -42,6 +43,16 @@ class DocumentController extends Controller
       }
 
       $documents = $query->orderBy('updated_at', 'desc')->get();
+
+      // Attach image records
+      foreach($documents as $document){
+        foreach($collection->fields as $field){
+          if($field->type->name == "file"){
+            $fieldName = $field->name;
+            $document->$fieldName = TenantFile::where('id', $document->$fieldName)->first();
+          }
+        }
+      }
 
       return response([
         'message' => 'All collections documents.',
@@ -75,6 +86,13 @@ class DocumentController extends Controller
       }
 
       $document = $query->orderBy('updated_at', 'desc')->first();
+
+      foreach($collection->fields as $field){
+        if($field->type->name == "file"){
+          $fieldName = $field->name;
+          $document->$fieldName = TenantFile::where('id', $document->$fieldName)->first();
+        }
+      }
 
       return response([
         'message' => 'Collection document.',

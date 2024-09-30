@@ -60,7 +60,8 @@ class UserController extends Controller
 
       return response([
         'message' => 'List all users.',
-        'users' => $users
+        'users' => $users,
+        'test' => $request->requesting_user
       ], 200);
     } catch (Exception $e) {
       return response([
@@ -140,6 +141,12 @@ class UserController extends Controller
 
     try {
 
+      if($user->admin && !$request->requesting_user->admin){
+        return response([
+          'message' => 'Admin user cannot be updated.'
+        ], 401);
+      }
+
       if ($request->has('name')) {
         $user->name = $request->name;
       }
@@ -168,6 +175,12 @@ class UserController extends Controller
   public function destroy(Request $request, User $user)
   {
     try {
+
+      if($user->admin && !$request->requesting_user->admin){
+        return response([
+          'message' => 'Admin user cannot be removed, only changed.'
+        ], 401);
+      }
 
       UserRegister::where('email', $user->email)->delete();
       UserPasswordReset::where('email', $user->email)->delete();

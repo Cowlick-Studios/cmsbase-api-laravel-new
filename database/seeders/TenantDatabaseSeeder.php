@@ -22,6 +22,8 @@ class TenantDatabaseSeeder extends Seeder
     \App\Models\tenant\User::factory()->create([
       'name' => 'user',
       'email' => 'user@example.com',
+      'admin' => true,
+      'public' => false,
     ]);
 
     \App\Models\tenant\User::factory(10)->create();

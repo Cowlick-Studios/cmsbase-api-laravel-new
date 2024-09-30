@@ -22,7 +22,7 @@ class AuthenticateTokenTenantOptional
 
       $jwt = $request->bearerToken();
 
-      if($request->hasHeader('Authorization') || $jwt !== ""){
+      if($request->hasHeader('Authorization') || $jwt){
 
         $jwtPublicKey = sodium_bin2base64(sodium_crypto_sign_publickey(sodium_base642bin(config("auth.jwt_key"), SODIUM_BASE64_VARIANT_URLSAFE_NO_PADDING)), SODIUM_BASE64_VARIANT_ORIGINAL);
         $decoded = JWT::decode($jwt, new Key($jwtPublicKey, 'EdDSA')); // key is required in SODIUM_BASE64_VARIANT_ORIGINAL
