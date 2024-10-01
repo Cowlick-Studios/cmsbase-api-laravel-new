@@ -215,6 +215,8 @@ Route::prefix('admin')->group(function () {
     Route::delete('/{tenant}', [TenantController::class, 'destroy']);
     
     Route::post('/{tenant}/user', [TenantController::class, 'createTenantUser']);
+    Route::patch('/{tenant}/user/{tenantUserId}', [TenantController::class, 'updateTenantUser']);
+    Route::delete('/{tenant}/user/{tenantUserId}', [TenantController::class, 'destroyTenantUser']);
   });
 
   Route::prefix('user')->middleware(AuthenticateToken::class)->group(function () {

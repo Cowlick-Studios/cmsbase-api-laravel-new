@@ -6,12 +6,21 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Hash;
 use Exception;
+use Illuminate\Support\Facades\Mail;
 
 use App\Models\User;
 use App\Models\Tenant;
 use App\Models\tenant\FieldType;
 use App\Models\tenant\Setting;
+
+use App\Models\tenant\User as TenantUser;
+use App\Models\tenant\UserRegister as TenantUserRegister;
+use App\Models\tenant\UserPasswordReset as TenantUserPasswordReset;
+use App\Models\tenant\UserEmailChange as TenantUserEmailChange;
+
+use App\Mail\AuthRegisterConfirmationCode;
 
 class TenantController extends Controller
 {
@@ -55,9 +64,17 @@ class TenantController extends Controller
   public function show(Request $request, Tenant $tenant)
   {
     try {
+      $tenantUsers = [];
+
+      // Run as tenant
+      $tenant->run(function (Tenant $tenant) use(&$tenantUsers) {
+        $tenantUsers = TenantUser::all()->toArray();
+      });
+
       return response([
         'message' => 'Tenant record.',
-        'tenant' => $tenant
+        'tenant' => $tenant,
+        'users' => $tenantUsers
       ], 200);
     } catch (Exception $e) {
       return response([
@@ -160,26 +177,112 @@ class TenantController extends Controller
       'name' => ['required'],
       'email' => ['required'],
       'password' => ['required'],
-      'admin' => ['required'],
+      'public' => ['required', 'boolean'],
     ]);
 
     try {
 
-      $tenant->run(function (Tenant $tenant) use ($request) {
-        $user = User::create([
-          'name' => $request->name,
-          'email' => $request->email,
-          'password' => bcrypt($request->password),
-          'public' => false,
-          'blocked' => false
-        ]);
+      $newUser = [];
 
-        $user->admin = $request->admin;
+      $tenant->run(function (Tenant $tenant) use ($request, &$newUser) {
+        // Create user
+        $user = new User;
+        $user->name = $request->name;
+        $user->email = $request->email;
+        $user->password = Hash::make($request->password);
+        $user->public = $request->public;
+        $user->blocked = false;
+        $user->save();
 
-        $user->email_verified_at = now();
-        $user->remember_token = Str::random(10);
+        // Create email verification
+        $emailVerification = new TenantUserRegister;
+        $emailVerification->email = $request->email;
+        $emailVerification->verification_code = $this->generateVerificationCode();
+        $emailVerification->save();
+
+        // Send mail confirmation
+        Mail::to($user)->send(new AuthRegisterConfirmationCode($user->email, $emailVerification->verification_code, tenant()->id));
+
+        $newUser = $user->toArray();
+      });
+
+      return response([
+        'message' => 'Updated tenant.',
+        'tenant' => $tenant,
+        'user' => $newUser
+      ], 200);
+    } catch (Exception $e) {
+      return response([
+        'message' => $e->getMessage()
+      ], 500);
+    }
+  }
+
+  public function updateTenantUser(Request $request, Tenant $tenant, $tenantUserId)
+  {
+
+    $request->validate([
+      'public' => ['boolean'],
+      'blocked' => ['boolean'],
+    ]);
+
+    try {
+
+      $updatedUser = [];
+
+      $tenant->run(function (Tenant $tenant) use ($request, $tenantUserId, &$updatedUser) {
+
+        $user = TenantUser::where('id', $tenantUserId)->first();
+
+        if ($request->has('name')) {
+          $user->name = $request->name;
+        }
+
+        if ($request->has('public')) {
+          $user->public = $request->public;
+        }
+
+        if ($request->has('blocked')) {
+          $user->blocked = $request->blocked;
+        }
 
         $user->save();
+
+        $updatedUser = $user->toArray();
+      });
+
+      return response([
+        'message' => 'Updated tenant.',
+        'tenant' => $tenant,
+        'user' => $updatedUser
+      ], 200);
+    } catch (Exception $e) {
+      return response([
+        'message' => $e->getMessage()
+      ], 500);
+    }
+  }
+
+  public function destroyTenantUser(Request $request, Tenant $tenant, $tenantUserId)
+  {
+
+    $request->validate([
+      'public' => ['boolean'],
+      'blocked' => ['boolean'],
+    ]);
+
+    try {
+
+      $tenant->run(function (Tenant $tenant) use ($request, $tenantUserId) {
+
+        $user = TenantUser::where('id', $tenantUserId)->first();
+
+        TenantUserRegister::where('email', $user->email)->delete();
+        TenantUserPasswordReset::where('email', $user->email)->delete();
+        TenantUserEmailChange::where('email', $user->email)->delete();
+        TenantUserEmailChange::where('new_email', $user->email)->delete();
+
+        $user->delete();
       });
 
       return response([
