@@ -15,6 +15,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Exception;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use DateTime;
 
 use App\Models\tenant\Collection;
 use App\Models\tenant\FieldType;
@@ -41,6 +42,60 @@ class CollectionController extends Controller
         'message' => 'All collections.',
         'collections' => $collections,
       ], 200);
+    } catch (Exception $e) {
+      return response([
+        'message' => $e->getMessage()
+      ], 500);
+    }
+  }
+
+  public function feed(Request $request, $collectionName)
+  {
+    try {
+
+      $collection = Collection::with(['fields', 'fields.type'])->where('name', $collectionName)->first();
+
+      if (!$collection->public_read && (!$request->requesting_user || $request->requesting_user->public)) {
+        return response([
+          'message' => 'Public users cannot perform read operations on this collection.',
+        ], 401);
+      }
+
+      $tableName = "collection-{$collection->name}";
+      $query = DB::table($tableName);
+      $documents = $query->where('published', true)->latest()->get();
+
+      $rssTitle = tenant()->id . " - " . $collection->name;
+      $cmsUrl = config('app.url');
+
+      // RSS
+      $feedContent = "
+<rss version='2.0'>
+<channel>
+    <title>{$rssTitle}</title>
+    <link>{$cmsUrl}</link>
+    <description>RSS Feed</description>
+    <language>en-us</language>";
+
+  foreach ($documents as $document) {
+    $parsedDate = new DateTime($document->created_at);
+    $rfc822Date = $parsedDate->format(DateTime::RFC822);
+
+    $feedContent .= "
+    <item>
+        <title>{$document->title}</title>
+        <description>{$document->description}</description>
+        <link>{$document->link}</link>
+        <pubDate>{$rfc822Date}</pubDate>
+    </item>";
+  }
+
+  $feedContent .= "
+</channel>
+</rss>";
+      
+        return response($feedContent, 200)->header('Content-Type', 'application/rss+xml');
+
     } catch (Exception $e) {
       return response([
         'message' => $e->getMessage()

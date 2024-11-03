@@ -106,6 +106,7 @@ Route::group([
 
   Route::prefix('collection')->group(function () {
     Route::middleware([AuthenticateTokenTenantOptional::class, LogRequestResponse::class])->get('/', [CollectionController::class, 'index']);
+    Route::middleware([AuthenticateTokenTenantOptional::class, LogRequestResponse::class])->get('/{collectionName}/feed', [CollectionController::class, 'feed']);
     Route::middleware([AuthenticateTokenTenantOptional::class, LogRequestResponse::class])->get('/{collectionName}', [CollectionController::class, 'show']);
     Route::middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class, LogRequestResponse::class])->post('/', [CollectionController::class, 'store']);
     Route::middleware([AuthenticateTokenTenant::class, AdminUserOnlyTenant::class, LogRequestResponse::class])->patch('/{collection}', [CollectionController::class, 'update']);
