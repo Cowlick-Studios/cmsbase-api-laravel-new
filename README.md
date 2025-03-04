@@ -94,3 +94,12 @@ The connection details for the docker environment is taken from the project .env
 | redis        | 6379       |          |          |                   |
 | mailpit-SMTP | 1025       |          |          |                   |
 | mailpit-UI   | 8025       |          |          |                   |
+
+## Coolify nixpacks
+
+One issue with deploying on coolify is once you create persistent sotrage for the /app/storage directory you nee dto create the framework cache files.
+
+``` sh
+# Run in the persistent mount on home in /app/storage dir
+mkdir -p framework/{views,cache,sessions}
+```
